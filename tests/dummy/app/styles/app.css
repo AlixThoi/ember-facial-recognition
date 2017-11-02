@@ -1,0 +1,26 @@
+.ember-webcam-viewer {
+	width: 100%;
+	height: 600px;
+	position: relative;
+	z-index: -20;
+}
+.button-show {
+	position: relative;
+	display: block;
+	margin: 0 auto;
+	
+}
+.background-test {
+	vertical-align: bottom !important;
+	display: inline-block !important;
+	position: fixed;
+	padding-bottom: 0 !important;
+	margin-bottom: 0 !important;
+	bottom: 0;
+	right: 0; 
+  	min-width: 100%; 
+  	min-height: 100%;
+  	width: 100%; 
+  	height: 100%;
+  	
+}
