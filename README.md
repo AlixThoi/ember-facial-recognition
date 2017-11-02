@@ -1,6 +1,5 @@
 # ember-facial-recognition
 
-
 * Replace the subscriptionKey string value with your valid subscription key
     * https://azure.microsoft.com/en-us/try/cognitive-services/?api=face-api
   
