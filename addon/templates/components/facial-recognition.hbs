@@ -1,1 +1,11 @@
+{{#ember-webcam
+	didSnap=(action 'didSnap')
+  	didError=(action 'didError')
+  		as |camera|}}
+  	<button class="button-show" {{action camera.snap}}> Take Snapshot!
+  		</button>
+	{{/ember-webcam}}
+ 	
+		<img src={{dataUri}}>
+
 {{yield}}

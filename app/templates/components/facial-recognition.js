@@ -1,0 +1,1 @@
+export { default } from 'ember-facial-recognition/templates/components/facial-recognition';
