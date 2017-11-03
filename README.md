@@ -12,7 +12,7 @@
 
 Run ```ember serve``` and visit the demo page at http://localhost:4200
  
-### Usage
+## Usage
 
 * This add on combines 'ember-webcam' and leverages Microsoft Cognitive Services.
     - detect: returns back data about the user (age, emotion) and a unique FaceId which can be used for other services.
