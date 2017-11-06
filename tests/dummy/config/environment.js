@@ -38,7 +38,7 @@ module.exports = function(environment) {
       ENV.APP.recognition.serviceUrl="https://westus.api.cognitive.microsoft.com/face/v1.0";
       ENV.APP.recognition.detectUrl=ENV.APP.recognition.serviceUrl + "/detect?";
       ENV.APP.recognition.createFaceListUrl=ENV.APP.recognition.serviceUrl + "/facelists/{faceListId}?";
-      ENV.APP.recognition.addFaceToListUrl=ENV.APP.recognition.serviceUrl + "/facelists/{faceListId}/persistedFaces?"
+      ENV.APP.recognition.addFaceToListUrl=ENV.APP.recognition.serviceUrl + "/facelists/281fce7e-5b9d-446e-a30b-a73dcd8727f7/persistedFaces?"
   }
 
   if (environment === 'test') {

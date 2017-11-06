@@ -90,7 +90,8 @@ export default Ember.Component.extend({
                             return emotion;
                         }
                     }, "confused");
-                    alert("face detected");
+                    Ember.Logger.log("face detected");
+                    //self.addFaceToFaceList(blob);
                 }
             }
             else {
@@ -98,7 +99,7 @@ export default Ember.Component.extend({
             }
 
         }).fail(function() {
-            alert("error. Might not have a valid subscriptionKey");
+            Ember.Logger.error("error in face detect. Might not have a valid subscriptionKey");
         });
 
     },
@@ -108,6 +109,7 @@ export default Ember.Component.extend({
      * May have to change in the config/environment.js file, the URL to use the location where you obtained your subscription keys.
      */
     createFaceList() {
+        var self = this;
         var params = {
                 "faceListId": "281fce7e-5b9d-446e-a30b-a73dcd8727f7"
         };
@@ -130,8 +132,8 @@ export default Ember.Component.extend({
             Ember.Logger.log(data);
         })
         .fail(function() {
-            Ember.Logger.log("create face list fail");
-            alert("error. Might not have a valid subscriptionKey");
+            Ember.Logger.error("create face list fail");
+            Ember.Logger.error("error. Might not have a valid subscriptionKey");
         });
     },
 
@@ -141,10 +143,11 @@ export default Ember.Component.extend({
      * May have to change in the config/environment.js file, the URL to use the location where you obtained your subscription keys.
      */
     addFaceToFaceList(faceUri) {
+        var self = this;
         var params = {
-                "faceListId": "291fce7e-5b9d-446e-a30b-b73dcd8727f7",
+                "faceListId": "281fce7e-5b9d-446e-a30b-a73dcd8727f7",
                 "userData": "",
-                "targetFace": "",
+                "targetFace": ""
         };
         Ember.$.ajax({
             url: this.get('config.addFaceToListUrl') + Ember.$.param(params),
@@ -156,15 +159,16 @@ export default Ember.Component.extend({
             },
             type: "POST",
             // Request body
-            data: faceUri,
+            data: faceUri
         })
         .done(function(data) {
             Ember.Logger.log("added to face list");
             Ember.Logger.log(data);
+            return data;
         })
         .fail(function() {
             Ember.Logger.log("add face fail");
-            alert("error. Might not have a valid subscriptionKey");
+            Ember.Logger.error("error. Might not have a valid subscriptionKey");
         });
     },
 
@@ -183,6 +187,7 @@ export default Ember.Component.extend({
             //Converts dataUri from picture taken
             var blob = self.convertDataUriToBinary(dataUri);
             this.set('dataUri', dataUri);
+            //self.createFaceList();
         },
         didError(error) {
             // Fires when a WebcamError occurs.
