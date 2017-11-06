@@ -22,7 +22,8 @@ module.exports = function(environment) {
       // Here you can pass flags/options to your application instance
       // when it is created
         recognition: {
-            serviceUrl: ""
+            serviceUrl: "",
+            subscriptionKey:""
         }
     }
   };
@@ -39,6 +40,8 @@ module.exports = function(environment) {
       ENV.APP.recognition.detectUrl=ENV.APP.recognition.serviceUrl + "/detect?";
       ENV.APP.recognition.createFaceListUrl=ENV.APP.recognition.serviceUrl + "/facelists/{faceListId}?";
       ENV.APP.recognition.addFaceToListUrl=ENV.APP.recognition.serviceUrl + "/facelists/281fce7e-5b9d-446e-a30b-a73dcd8727f7/persistedFaces?"
+      ENV.APP.recognition.subscriptionKey=""
+          //13hc77781f7e4b19b5fcdd72a8df7156
   }
 
   if (environment === 'test') {

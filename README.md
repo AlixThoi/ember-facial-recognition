@@ -19,7 +19,7 @@ Run ```ember serve``` and visit the demo page at http://localhost:4200
     
     - recognition: WIP 
 
-* Replace the subscriptionKey string value with your valid subscription key
+* After clicking "Take snapshot!", input a valid subscription key for microsoft cognitive services.
     * https://azure.microsoft.com/en-us/try/cognitive-services/?api=face-api
  
 * May have to change in the config/environment.js file, the URL to use the location where you obtained your subscription keys.

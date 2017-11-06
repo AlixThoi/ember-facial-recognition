@@ -11,7 +11,7 @@ export default Ember.Component.extend({
         this._super(...arguments);
         this.set('config', Ember.getOwner(this).resolveRegistration('config:environment').APP.recognition);
         // Replace the subscriptionKey string value with your valid subscription key (this one won't work).
-        this.set('subscriptionKey',  "13hc77781f7e4b19b5fcdd72a8df7156");
+        this.set('subscriptionKey',  this.get('config.subscriptionKey'));
         
     }, 
     
@@ -180,6 +180,10 @@ export default Ember.Component.extend({
         didSnap(dataUri) {
             // Delivers a data URI when snapshot is taken.
             var self = this
+            if(this.get('config.subscriptionKey') === "") {
+                var subscriptionKey = prompt("Please enter a valid subscriptionKey");   
+                this.set('subscriptionKey', subscriptionKey);
+            }
             
             //calls microsoft detect API with the image snapped
             self.microsoftDetect(dataUri);
