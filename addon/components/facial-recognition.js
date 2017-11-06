@@ -16,7 +16,7 @@ export default Ember.Component.extend({
     }, 
     
     /**
-     * Convert the image into Blob to pass into Microsoft Detect call
+     * Convert the image into Blob to pass into Microsoft Detect/addface call
      * @params dataURL image recieved from webcam
      * 
      */
