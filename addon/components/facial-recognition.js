@@ -17,7 +17,10 @@ export default Ember.Component.extend({
 		this.set('subscriptionKey',  this.get('config.subscriptionKey'));
 		this.set('personGroupId', "24f6bc52-2e38-4e81-ba60-c1d81d8bd324");
 		this.set('personGroupName', "SD County DCSS");
-
+		if(this.get('config.subscriptionKey') === "") {
+			var subscriptionKey = prompt("Please enter a valid subscriptionKey");   
+			this.set('subscriptionKey', subscriptionKey);
+		}
 	}, 
 
 	/**
@@ -55,7 +58,6 @@ export default Ember.Component.extend({
 		var blob = this.convertDataUriToBinary(faceUri);
 		Ember.Logger.log(blob);
 		var self = this;
-		var faceList = [];
 
 		var params = {
 				"returnFaceId": "true",     
@@ -63,8 +65,9 @@ export default Ember.Component.extend({
 		};
 
 		this.set('faceResults', null);
-		Ember.$.ajax({
-			url: this.get('config.detectUrl') + Ember.$.param(params),
+		var promise =  new Ember.RSVP.Promise(function(resolve, reject) { 
+			Ember.$.ajax({
+			url: self.get('config.detectUrl') + Ember.$.param(params),
 			processData: false,
 			beforeSend: function(xhrObj){
 				// Request headers
@@ -76,53 +79,18 @@ export default Ember.Component.extend({
 			type: "POST",
 			// Request body
 			data: blob
-		})
-		.done(function(data) {
-			if(data[0] !== null) {
-				Ember.Logger.log(data);
-				if(data[0].faceId !== null) {
-					var personGroup = self.getListOfPersonGroup();
-					var emotionSet = data[0].faceAttributes.emotion;
-					var result = JSON.stringify(emotionSet);
-					Ember.Logger.log(result);
-					Ember.Logger.log(data[0].faceAttributes.age);
-					var emotionKeys = Object.keys(emotionSet);
-					var maximum = 0; 
-					var emotion = emotionKeys.reduce(function(emotion, emotionKey){
-						var emotionValue = emotionSet[emotionKey];
-						if (emotionValue >= maximum) {
-							maximum = emotionValue;
-							return emotionKey;
-						} else {
-							return emotion;
-						}
-					}, "confused");
-					Ember.Logger.log("face detected");
-					faceList.push(data[0].faceId);
-					self.set('detectedFace', faceList);
-					Ember.Logger.log("face id" + self.get('detectedFace'));
-
-					if(personGroup === []) {
-						self.createPersonGroup();
-					}
-					var candidates = self.identify();
-					if(candidates === []) {
-						Ember.Logger.log("no candidates");
-					}
-					else {
-						Ember.Logger.log(candidates);
-					}
-					self.createPerson();
+			})
+			.done(function(data) {
+				if(data[0] !== null) {
+					resolve(data);
+				} else {
+					reject("Failed to detect a face");
 				}
-			}
-			else {
-				Ember.Logger.log("no face got detected");
-			}
-
-		}).fail(function() {
-			Ember.Logger.error("error in face detect. Might not have a valid subscriptionKey");
+			}).fail(function() {
+				reject("error in face detect. Might not have a valid subscriptionKey");
+			});
 		});
-
+		return promise;
 	},
 
 	/**
@@ -136,7 +104,7 @@ export default Ember.Component.extend({
 		};
 
 		Ember.$.ajax({
-			url: this.get('config.createFaceListUrl') + Ember.$.param(params),
+			url: self.get('config.createFaceListUrl') + Ember.$.param(params),
 			beforeSend: function(xhrObj){
 				// Request headers
 				xhrObj.setRequestHeader("Content-Type","application/json");
@@ -171,7 +139,7 @@ export default Ember.Component.extend({
 				"targetFace": ""
 		};
 		Ember.$.ajax({
-			url: this.get('config.addFaceToListUrl') + Ember.$.param(params),
+			url: self.get('config.addFaceToListUrl') + Ember.$.param(params),
 			beforeSend: function(xhrObj){
 				// Request headers
 				xhrObj.setRequestHeader("Content-Type","application/octet-stream");
@@ -193,84 +161,87 @@ export default Ember.Component.extend({
 		});
 	},
 
-	identify() {
+	identify(faceList) {
 		var self = this;
 		var params = {
 				// Request parameters
-				"faceIds": self.get('detectedFace'),
-				"personGroupId": "54f6bc52-2e38-4e81-ba60-c1d81d8bd324",
+				"faceIds": faceList,
+				"personGroupId": this.get('personGroupId'),
 				"confidenceThreshhold": .5
 		};
 
-		$.ajax({
-			url: "https://westus.api.cognitive.microsoft.com/face/v1.0/identify",
-			beforeSend: function(xhrObj){
-				// Request headers
-				xhrObj.setRequestHeader("Content-Type","application/json");
-				xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key", self.get('subscriptionKey'));
-			},
-			type: "POST",
-			// Request body
-			data: JSON.stringify(params),
-		})
-		.done(function(data) {
-			Ember.Logger.log("success identify");
-			return data;
-		})
-		.fail(function() {
-			Ember.Logger.log("error identify");
+		return new Ember.RSVP.Promise(function(resolve, reject) { 
+			Ember.$.ajax({
+				url: self.get("config.serviceUrl") + "/identify",
+				beforeSend: function(xhrObj){
+					// Request headers
+					xhrObj.setRequestHeader("Content-Type","application/json");
+					xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key", self.get('subscriptionKey'));
+				},
+				type: "POST",
+				// Request body
+				data: JSON.stringify(params),
+			})
+			.done(function(candidates) {
+				
+				if(candidates === []) {
+					reject("No candidates found");
+				} else {
+					resolve(candidates);
+				}
+			})
+			.fail(function() {
+				reject("error identify");
+			});
 		});
 	},
 
 	createPersonGroup() {
 		var self = this;
 		var body = {"name":this.get('personGroupName')}
-		var params = {
-				// Request params
-				"personGroupId": this.get('personGroupId'),
-		};
+		return new Ember.RSVP.Promise(function(resolve, reject) { 
 
-		$.ajax({
-			url: "https://westus.api.cognitive.microsoft.com/face/v1.0/persongroups/" + this.get('personGroupId'),
-			beforeSend: function(xhrObj){
-				// Request headers
-				xhrObj.setRequestHeader("Content-Type","application/json");
-				xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key", self.get('subscriptionKey'));
-			},
-			type: "PUT",
-			// Request body
-			data: JSON.stringify(body),
-		})
-		.done(function(data) {
-			Ember.Logger.log("create person group success");
-		})
-		.fail(function() {
-			Ember.Logger.log("create person group error");
+			Ember.$.ajax({
+				url: self.get("config.serviceUrl") + "/persongroups/" + this.get('personGroupId'),
+				beforeSend: function(xhrObj){
+					// Request headers
+					xhrObj.setRequestHeader("Content-Type","application/json");
+					xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key", self.get('subscriptionKey'));
+				},
+				type: "PUT",
+				// Request body
+				data: JSON.stringify(body),
+			})
+			.done(function(data) {
+				resolve(data);
+			})
+			.fail(function() {
+				reject("create person group error");
+			});
 		});
 
 	},
 
 	getListOfPersonGroup() {
 		var self = this;
-		var params = {
-				// Request parameters
-		};
 
-		$.ajax({
-			url: "https://westus.api.cognitive.microsoft.com/face/v1.0/persongroups" + $.param(params),
-			beforeSend: function(xhrObj){
-				// Request headers
-				xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key", self.get('subscriptionKey'));
-			},
-			type: "GET",
-			// Request body
-			data: "",
-		})
-		.done(function(data) {
-			Ember.Logger.log("Got person group list success");
-		})
-		.fail(function() {
-			Ember.Logger.log("Person group List error");
+		return new Ember.RSVP.Promise(function(resolve, reject) { 
+		Ember.$.ajax({
+				url: self.get("config.serviceUrl") + "/persongroups",
+				beforeSend: function(xhrObj){
+					// Request headers
+					xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key", self.get('subscriptionKey'));
+				},
+				type: "GET",
+				// Request body
+				data: "",
+			})
+			.done(function(data) {
+				resolve(data);
+			})
+			.fail(function() {
+				reject("Person group List error");
+			});
 		});
 	},
 
@@ -281,22 +252,24 @@ export default Ember.Component.extend({
 				"personGroupId": this.get('personGroupId'),
 		};
 
-		$.ajax({
-			url: "https://westus.api.cognitive.microsoft.com/face/v1.0/persongroups/" + self.get('personGroupId') + "/persons",
-			beforeSend: function(xhrObj){
-				// Request headers
-				xhrObj.setRequestHeader("Content-Type","application/json");
-				xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key",self.get('subscriptionKey'));
-			},
-			type: "POST",
-			// Request body
-			data: JSON.stringify(body),
-		})
-		.done(function(data) {
-			Ember.Logger.log("create person success");
-		})
-		.fail(function() {
-			Ember.Logger.error("create person error");
+		return new Ember.RSVP.Promise(function(resolve, reject) { 
+			Ember.$.ajax({
+				url: self.get("config.serviceUrl") + "/persongroups/" + self.get('personGroupId') + "/persons",
+				beforeSend: function(xhrObj){
+					// Request headers
+					xhrObj.setRequestHeader("Content-Type","application/json");
+					xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key",self.get('subscriptionKey'));
+				},
+				type: "POST",
+				// Request body
+				data: JSON.stringify(body),
+			})
+			.done(function(person) {
+				resolve(person);
+			})
+			.fail(function() {
+				reject("create person error");
+			});
 		});
 	},
 
@@ -307,20 +280,57 @@ export default Ember.Component.extend({
 		 */
 		didSnap(dataUri) {
 			// Delivers a data URI when snapshot is taken.
-			var self = this
-			if(this.get('config.subscriptionKey') === "") {
-				var subscriptionKey = prompt("Please enter a valid subscriptionKey");   
-				this.set('subscriptionKey', subscriptionKey);
-			}
+			var self = this;
+			var faceList = [];
 
 			//calls microsoft detect API with the image snapped
-			self.microsoftDetect(dataUri);
+			self.microsoftDetect(dataUri)
+			.then (function(data){
+					Ember.Logger.log(data);
+					var firstFace = data[0];
+					var faceId = firstFace.faceId; 
+					if(faceId !== null) {
+						var emotionSet = firstFace.faceAttributes.emotion;
+						var result = JSON.stringify(emotionSet);
+						Ember.Logger.log(result);
+						Ember.Logger.log(firstFace.faceAttributes.age);
+						var emotionKeys = Object.keys(emotionSet);
+						var maximum = 0; 
+						var emotion = emotionKeys.reduce(function(emotion, emotionKey){
+							var emotionValue = emotionSet[emotionKey];
+							if (emotionValue >= maximum) {
+								maximum = emotionValue;
+								return emotionKey;
+							} else {
+								return emotion;
+							}
+						}, "confused");
+						Ember.Logger.log("face detected");
+						faceList.push(firstFace.faceId);
+						self.set('detectedFace', faceList);
+						Ember.Logger.log("face id" + self.get('detectedFace'));
 
+						return self.identify(faceList);
+					}
+			
+			})
+			.then (function(candidates){
+				
+				Ember.Logger.log(candidates);
+				var firstCandidate = candidates[0];
+				if (firstCandidate.confidence < this.get('confidenceLevel')) {
+					return self.createPerson();
+				} else {
+					return firstCandidate;
+				}
+			})
+			.then(function(person){
+				Ember.Logger.log("Found: ", person);
+			})
+			.catch(function(e){
+				Ember.Logger.error("Failed to identify due to: " + e);
+			});
 
-			//Converts dataUri from picture taken
-			var blob = self.convertDataUriToBinary(dataUri);
-			this.set('dataUri', dataUri);
-			//self.createFaceList();
 		},
 		didError(error) {
 			// Fires when a WebcamError occurs.
