@@ -12,7 +12,8 @@ export default Ember.Component.extend({
 	personGroupId: null,
 	personGroupName: null,
 	personId: null,
-	
+	highestEmotion: null,
+
 	init() {
 		this._super(...arguments);
 		this.set('config', Ember.getOwner(this).resolveRegistration('config:environment').APP.recognition);
@@ -62,7 +63,7 @@ export default Ember.Component.extend({
 		//Ember.Logger.log(blob);
 		var self = this;
 		this.set('facePicture', faceUri);
-		
+
 
 		var params = {
 				"returnFaceId": "true",     
@@ -72,21 +73,40 @@ export default Ember.Component.extend({
 		this.set('faceResults', null);
 		var promise =  new Ember.RSVP.Promise(function(resolve, reject) { 
 			Ember.$.ajax({
-			url: self.get('config.detectUrl') + Ember.$.param(params),
-			processData: false,
-			beforeSend: function(xhrObj){
-				// Request headers
-				xhrObj.setRequestHeader("Content-Type","application/octet-stream");
+				url: self.get('config.detectUrl') + Ember.$.param(params),
+				processData: false,
+				beforeSend: function(xhrObj){
+					// Request headers
+					xhrObj.setRequestHeader("Content-Type","application/octet-stream");
 
-				//Enter your subscription key
-				xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key", self.get('subscriptionKey'));
-			},
-			type: "POST",
-			// Request body
-			data: blob
+					//Enter your subscription key
+					xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key", self.get('subscriptionKey'));
+				},
+				type: "POST",
+				// Request body
+				data: blob
 			})
 			.done(function(data) {
 				if(data[0] !== null) {
+					var emotionSet = data[0].faceAttributes.emotion;
+					var result = JSON.stringify(emotionSet);
+					//Ember.Logger.log(result);
+					Ember.Logger.log(data[0].faceAttributes.age);
+					var emotionKeys = Object.keys(emotionSet);
+					var maximum = 0; 
+					var emotion = emotionKeys.reduce(function(emotion, emotionKey){
+						var emotionValue = emotionSet[emotionKey];
+						if (emotionValue >= maximum) {
+							maximum = emotionValue;
+							return emotionKey;
+						} else {
+							return emotion;
+						}
+					}, "confused");
+					self.set('highestEmotion', emotion);
+					Ember.Logger.log("Emotion: " + emotion);
+					//Ember.Logger.log("Happy: " + data[0].faceAttributes.emotion.happiness);
+					//self.set('happyEmotion',data[0].faceAttributes.emotion.happiness);
 					resolve(data);
 				} else {
 					reject("Failed to detect a face");
@@ -188,7 +208,7 @@ export default Ember.Component.extend({
 				data: JSON.stringify(params),
 			})
 			.done(function(candidates) {
-				
+
 				if(candidates === []) {
 					reject("No candidates found");
 				} else {
@@ -234,7 +254,7 @@ export default Ember.Component.extend({
 		var self = this;
 
 		return new Ember.RSVP.Promise(function(resolve, reject) { 
-		Ember.$.ajax({
+			Ember.$.ajax({
 				url: self.get("config.serviceUrl") + "/persongroups",
 				beforeSend: function(xhrObj){
 					// Request headers
@@ -253,8 +273,8 @@ export default Ember.Component.extend({
 		});
 	},
 
-	createPerson() {
-		var body = {"name":"Alix"}
+	createPerson(name) {
+		var body = name
 		var self = this;
 		var params = {
 				"personGroupId": this.get('personGroupId'),
@@ -283,95 +303,95 @@ export default Ember.Component.extend({
 			});
 		});
 	},
-	
+
 	trainPersonGroup() {
 		var self = this;
 		var params = {
-	            // Request parameters
+				// Request parameters
 				"personGroupId": self.get('personGroupId'),
-	        };
+		};
 		return new Ember.RSVP.Promise(function(resolve, reject) { 
-	        Ember.$.ajax({
-	            url: "https://westus.api.cognitive.microsoft.com/face/v1.0/persongroups/" + self.get('personGroupId') 
-	            + "/train",
-	            beforeSend: function(xhrObj){
-	                // Request headers
-	                xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key",self.get('subscriptionKey'));
-	            },
-	            type: "POST",
-	            // Request body
-	            data: "",
-	        })
-	        .done(function(data) {
-	            Ember.Logger.log("training person group success");
-	            resolve(data);
-	        })
-	        .fail(function() {
-	            reject("training person group error");
-	        });
+			Ember.$.ajax({
+				url: "https://westus.api.cognitive.microsoft.com/face/v1.0/persongroups/" + self.get('personGroupId') 
+				+ "/train",
+				beforeSend: function(xhrObj){
+					// Request headers
+					xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key",self.get('subscriptionKey'));
+				},
+				type: "POST",
+				// Request body
+				data: "",
+			})
+			.done(function(data) {
+				Ember.Logger.log("training person group success");
+				resolve(data);
+			})
+			.fail(function() {
+				reject("training person group error");
+			});
 		});
 	},
-	
+
 	personGroupTrainingStatus() {
 		var self = this;
 		var params = {
-	            // Request parameters
+				// Request parameters
 				"personGroupId": self.get('personGroupId'),
-	        };
-		 
-	        Ember.$.ajax({
-	            url: "https://westus.api.cognitive.microsoft.com/face/v1.0/persongroups/" + self.get('personGroupId') 
-	            + "/training",
-	            beforeSend: function(xhrObj){
-	                // Request headers
-	                xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key",self.get('subscriptionKey'));
-	            },
-	            type: "GET",
-	            // Request body
-	            data: "",
-	        })
-	        .done(function(data) {
-	        	
-	            Ember.Logger.log(" status group success: " + JSON.stringify(data));
-	           
-	        })
-	        .fail(function() {
-	           Ember.Logger.log("status fail")
-	        });
+		};
+
+		Ember.$.ajax({
+			url: "https://westus.api.cognitive.microsoft.com/face/v1.0/persongroups/" + self.get('personGroupId') 
+			+ "/training",
+			beforeSend: function(xhrObj){
+				// Request headers
+				xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key",self.get('subscriptionKey'));
+			},
+			type: "GET",
+			// Request body
+			data: "",
+		})
+		.done(function(data) {
+
+			Ember.Logger.log(" status group success: " + JSON.stringify(data));
+
+		})
+		.fail(function() {
+			Ember.Logger.log("status fail")
+		});
 	},
-	
+
 	addFaceToPerson() {
 		var self = this;
 		var facePic = this.get('facePicture');
-		
-	    // Ember.Logger.log("uri data picture: " + this.get('facePicture'));
-        var blob = this.convertDataUriToBinary(self.get('facePicture'));
-	    var params = {
-	            // Request parameters
-	            //"userData": "{string}",
-	           // "targetFace": "{string}",
-	        };
-	      
-	        Ember.$.ajax({
-	            url: "https://westus.api.cognitive.microsoft.com/face/v1.0/persongroups/" + self.get('personGroupId')
-	            +"/persons/" + self.get('personId') +"/persistedFaces",
-	            processData: false,
-	            beforeSend: function(xhrObj){
-	                // Request headers
-	                xhrObj.setRequestHeader("Content-Type","application/octet-stream");
-	                xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key",self.get('subscriptionKey'));
-	            },
-	            type: "POST",
-	            // Request body
-	            data: blob,
-	        })
-	        .done(function(data) {
-	        		self.trainPersonGroup()
-	            Ember.Logger.log("add face to person success");
-	        })
-	        .fail(function() {
-	            Ember.Logger.error("add face to person error");
-	        });
+
+		// Ember.Logger.log("uri data picture: " + this.get('facePicture'));
+		var blob = this.convertDataUriToBinary(self.get('facePicture'));
+		var params = {
+				// Request parameters
+				//"userData": "{string}",
+				// "targetFace": "{string}",
+		};
+
+		Ember.$.ajax({
+			url: "https://westus.api.cognitive.microsoft.com/face/v1.0/persongroups/" + self.get('personGroupId')
+			+"/persons/" + self.get('personId') +"/persistedFaces",
+			processData: false,
+			beforeSend: function(xhrObj){
+				// Request headers
+				xhrObj.setRequestHeader("Content-Type","application/octet-stream");
+				xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key",self.get('subscriptionKey'));
+			},
+			type: "POST",
+			// Request body
+			data: blob,
+		})
+		.done(function(data) {
+			self.trainPersonGroup()
+			Ember.Logger.log("add face to person success");
+		})
+		.fail(function() {
+			Ember.Logger.error("add face to person error");
+		});
 	},
 
 	actions: {
@@ -387,61 +407,72 @@ export default Ember.Component.extend({
 			//calls microsoft detect API with the image snapped
 			self.microsoftDetect(dataUri)
 			.then (function(data){
-					Ember.Logger.log(data);
-					var firstFace = data[0];
-					var faceId = firstFace.faceId; 
-					if(faceId !== null) {
-						var emotionSet = firstFace.faceAttributes.emotion;
-						var result = JSON.stringify(emotionSet);
-						Ember.Logger.log(result);
-						Ember.Logger.log(firstFace.faceAttributes.age);
-						var emotionKeys = Object.keys(emotionSet);
-						var maximum = 0; 
-						var emotion = emotionKeys.reduce(function(emotion, emotionKey){
-							var emotionValue = emotionSet[emotionKey];
-							if (emotionValue >= maximum) {
-								maximum = emotionValue;
-								return emotionKey;
-							} else {
-								return emotion;
-							}
-						}, "confused");
-						Ember.Logger.log("face detected");
-						faceList.push(firstFace.faceId);
-						
-						self.set('detectedFace', faceList);
-						Ember.Logger.log("face id" + self.get('detectedFace'));
-						Ember.Logger.log('face groupd id is: ' + self.get('personGroupId'));
-						//self.personGroupTrainingStatus();
-						//return self.trainPersonGroup();
-						self.personGroupTrainingStatus();
-						return self.identify(self.get('detectedFace'));
-						
-					}
-			
+				Ember.Logger.log(data);
+				var firstFace = data[0];
+				var faceId = firstFace.faceId; 
+				if(faceId !== null) {
+					var emotionSet = firstFace.faceAttributes.emotion;
+					var result = JSON.stringify(emotionSet);
+					Ember.Logger.log(result);
+					Ember.Logger.log(firstFace.faceAttributes.age);
+					var emotionKeys = Object.keys(emotionSet);
+					var maximum = 0; 
+					var emotion = emotionKeys.reduce(function(emotion, emotionKey){
+						var emotionValue = emotionSet[emotionKey];
+						if (emotionValue >= maximum) {
+							maximum = emotionValue;
+							return emotionKey;
+						} else {
+							return emotion;
+						}
+					}, "confused");
+					Ember.Logger.log("face detected");
+					faceList.push(firstFace.faceId);
+
+					self.set('detectedFace', faceList);
+					Ember.Logger.log("face id" + self.get('detectedFace'));
+					Ember.Logger.log('face groupd id is: ' + self.get('personGroupId'));
+					//self.personGroupTrainingStatus();
+					//return self.trainPersonGroup();
+					self.personGroupTrainingStatus();
+					return self.identify(self.get('detectedFace'));
+
+				}
+
 			})
 //			.then(function() {
-//				return self.trainPersonGroup();
+//			return self.trainPersonGroup();
 //			})
 //			.then(function() {
-//				Ember.Logger.log("person group id: " + self.get('personGroupId'));
-//				self.personGroupTrainingStatus();
-//				return self.identify(self.get('detectedFace'));
+//			Ember.Logger.log("person group id: " + self.get('personGroupId'));
+//			self.personGroupTrainingStatus();
+//			return self.identify(self.get('detectedFace'));
 //			})
 			.then (function(identified){
 				Ember.Logger.log("length of candidates: " + identified[0].candidates.length);
 				if(identified[0].candidates.length == 0) {
 					Ember.Logger.log("no candidates.. creating new person");
-					return self.createPerson();
+					var name = prompt("We don't recognize you, what's your name?");
+					return self.createPerson(name);
+					var notFound = document.getElementById('not-found');
+					var name = prompt("We don't recognize you, what's your name?");
 				}
 				else {
 					Ember.Logger.log("found candidate!")
 					Ember.Logger.log(identified);
 					Ember.Logger.log("this is the candidate: " + identified[0].candidates)
 					var firstCandidate = identified[0];
-						return firstCandidate;
+					var intro = document.getElementById('intro');
+					var found = document.getElementById('found');
+					var emotionBubble = document.getElementById('emotionBubble');
+					emotionBubble.innerHTML = "You are showing... " + self.get('highestEmotion');
+					Ember.$(emotionBubble).show();
+					setTimeout(function(){ Ember.$(emotionBubble).hide(); }, 3000);
+					Ember.$(intro).hide();
+					Ember.$(found).show();
+					return firstCandidate;
 				}
-				
+
 			})
 			.then(function(person){
 				Ember.Logger.log("Found: ", person);

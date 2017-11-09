@@ -1,10 +1,16 @@
+<h1 class="center-h1" id='intro'> Take your photo </h1>
 {{#ember-webcam
 	didSnap=(action 'didSnap')
   	didError=(action 'didError')
   		as |camera|}}
-  	<button class="button-show" {{action camera.snap}}> Take Snapshot!
+  		<p id='emotionBubble' visibility: hidden class="speech">SitePoint Rocks!</p>
+  	<button class="camera-button" {{action camera.snap}}> Take Snapshot!
   		</button>
 	{{/ember-webcam}}
-		<img src={{dataUri}}>
+	
+
+<h1 class="center-h1" id='found' visibility: hidden> We recognized you</h1>
+<h1 class="center-h1" id='not-found' visibility: hidden> We don't recognize, you try again</h1>
+
 
 {{yield}}
