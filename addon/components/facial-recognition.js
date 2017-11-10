@@ -208,18 +208,19 @@ export default Ember.Component.extend({
 				data: JSON.stringify(params),
 			})
 			.done(function(candidates) {
-
-				if(candidates === []) {
-					reject("No candidates found");
-				} else {
+				Ember.Logger.log("candidates = " + JSON.stringify(candidates));
+				if(candidates === null || candidates[0].candidates.length == 0) {
+					resolve(null);
+				} 
+				else {
 					resolve(candidates);
 					Ember.Logger.log("identify sucess: " + candidates)
 
 				}
 			})
 			.fail(function(candidates) {
-				Ember.Logger.log("identify fail: " + candidates)
-				resolve(null);
+				Ember.Logger.log("identify fail: " + JSON.stringify(candidates));
+				reject("adsfs");
 			});
 		});
 	},
@@ -230,7 +231,7 @@ export default Ember.Component.extend({
 		return new Ember.RSVP.Promise(function(resolve, reject) { 
 
 			Ember.$.ajax({
-				url: self.get("config.serviceUrl") + "/persongroups/" + this.get('personGroupId'),
+				url: self.get("config.serviceUrl") + "/persongroups/" + self.get('personGroupId'),
 				beforeSend: function(xhrObj){
 					// Request headers
 					xhrObj.setRequestHeader("Content-Type","application/json");
@@ -241,6 +242,7 @@ export default Ember.Component.extend({
 				data: JSON.stringify(body),
 			})
 			.done(function(data) {
+				Ember.Logger.log("creating person group");
 				resolve(data);
 			})
 			.fail(function() {
@@ -265,6 +267,8 @@ export default Ember.Component.extend({
 				data: "",
 			})
 			.done(function(data) {
+				Ember.Logger.log("getting list of people group: " + data);
+				Ember.Logger.log(data);
 				resolve(data);
 			})
 			.fail(function() {
@@ -274,7 +278,7 @@ export default Ember.Component.extend({
 	},
 
 	createPerson(name) {
-		var body = name
+		var body = {"name":name}
 		var self = this;
 		var params = {
 				"personGroupId": this.get('personGroupId'),
@@ -295,11 +299,15 @@ export default Ember.Component.extend({
 			.done(function(person) {
 				Ember.Logger.log("created person: " + person.personId);
 				self.set('personId', person.personId);
-				self.addFaceToPerson();
+			})
+			.then(function(person) {
+				self.addFaceToPerson()
+			})
+			.then(function(person) {
 				resolve(person);
 			})
-			.fail(function() {
-				reject("create person error");
+			.fail(function(e) {
+				reject("create person error" + e);
 			});
 		});
 	},
@@ -386,7 +394,6 @@ export default Ember.Component.extend({
 			data: blob,
 		})
 		.done(function(data) {
-			self.trainPersonGroup()
 			Ember.Logger.log("add face to person success");
 		})
 		.fail(function() {
@@ -434,8 +441,69 @@ export default Ember.Component.extend({
 					Ember.Logger.log('face groupd id is: ' + self.get('personGroupId'));
 					//self.personGroupTrainingStatus();
 					//return self.trainPersonGroup();
-					self.personGroupTrainingStatus();
-					return self.identify(self.get('detectedFace'));
+					self.getListOfPersonGroup()
+					.then(function(listOfPersonGroup) {
+						Ember.Logger.log(listOfPersonGroup + "this is #");
+						if (listOfPersonGroup.length == 0) {
+							Ember.Logger.log("create eprson group");
+								self.createPersonGroup();
+						}
+					})
+					.then(function() {
+						self.personGroupTrainingStatus();
+						return self.identify(self.get('detectedFace'));
+					})
+					.then (function(identified){
+						Ember.Logger.log("IN HERE" + identified);
+						if(identified === null || identified === undefined || identified[0].candidates.length == 0) {
+							Ember.Logger.log("no candidates.. creating new person");
+							var name = prompt("We don't recognize you, what's your name?");
+							var notFound = document.getElementById('not-found');
+							Ember.$(notFound).show();
+							setTimeout(function(){ Ember.$(notFound).hide(); }, 3000);
+							var obj = {
+								"person": self.createPerson(name),
+								"from": "first-block"
+							}
+							return obj;
+						} else {
+							Ember.Logger.log("found candidate!")
+							Ember.Logger.log(identified);
+							Ember.Logger.log("this is the candidate: " + identified[0].candidates)
+							var firstCandidate = identified[0];
+							var intro = document.getElementById('intro');
+							var found = document.getElementById('found');
+							var emotionBubble = document.getElementById('emotionBubble');
+							emotionBubble.innerHTML = "You are showing... " + self.get('highestEmotion');
+							Ember.$(emotionBubble).show();
+							setTimeout(function(){ Ember.$(emotionBubble).hide(); }, 3000);
+							Ember.$(intro).hide();
+							Ember.$(found).show();
+							setTimeout(function(){ Ember.$(found).hide(); }, 3000);
+							Ember.$(intro).show();
+
+							//self.personGroupTrainingStatus();
+							var obj = {
+									"person": firstCandidate,
+									"from": "second-block"
+								}
+							return obj;
+						}
+
+					})
+					.then(function(person){
+						Ember.Logger.log("From? " + person.from);
+						Ember.Logger.log("this is person: " + JSON.stringify(person));
+						if(person) {
+							Ember.Logger.log('Found: ' + JSON.stringify(person));
+							self.trainPersonGroup();
+						} else {
+							Ember.Logger.log("Created:" + JSON.stringify(person));
+						}
+					})
+					.catch(function(e){
+						Ember.Logger.error("Failed to identify due to: " + e);
+					});
 
 				}
 
@@ -448,38 +516,7 @@ export default Ember.Component.extend({
 //			self.personGroupTrainingStatus();
 //			return self.identify(self.get('detectedFace'));
 //			})
-			.then (function(identified){
-				Ember.Logger.log("length of candidates: " + identified[0].candidates.length);
-				if(identified[0].candidates.length == 0) {
-					Ember.Logger.log("no candidates.. creating new person");
-					var name = prompt("We don't recognize you, what's your name?");
-					return self.createPerson(name);
-					var notFound = document.getElementById('not-found');
-					var name = prompt("We don't recognize you, what's your name?");
-				}
-				else {
-					Ember.Logger.log("found candidate!")
-					Ember.Logger.log(identified);
-					Ember.Logger.log("this is the candidate: " + identified[0].candidates)
-					var firstCandidate = identified[0];
-					var intro = document.getElementById('intro');
-					var found = document.getElementById('found');
-					var emotionBubble = document.getElementById('emotionBubble');
-					emotionBubble.innerHTML = "You are showing... " + self.get('highestEmotion');
-					Ember.$(emotionBubble).show();
-					setTimeout(function(){ Ember.$(emotionBubble).hide(); }, 3000);
-					Ember.$(intro).hide();
-					Ember.$(found).show();
-					return firstCandidate;
-				}
-
-			})
-			.then(function(person){
-				Ember.Logger.log("Found: ", person);
-			})
-			.catch(function(e){
-				Ember.Logger.error("Failed to identify due to: " + e);
-			});
+			
 
 		},
 		didError(error) {
