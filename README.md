@@ -25,7 +25,7 @@ Run ```ember serve``` and visit the demo page at http://localhost:4200
 * May have to change in the config/environment.js file, the URL to use the location where you obtained your subscription keys.
   * https://westus.dev.cognitive.microsoft.com/docs/services/563879b61984550e40cbbe8d/operations/563879b61984550f30395236
 
-## Contributors
+## Dependencies
 
 * Uses ember-webcam addon to connect to camera and take picture 
   * https://www.npmjs.com/package/ember-webcam
