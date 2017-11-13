@@ -19,8 +19,10 @@ export default Ember.Component.extend({
 		this.set('config', Ember.getOwner(this).resolveRegistration('config:environment').APP.recognition);
 		// Replace the subscriptionKey string value with your valid subscription key (this one won't work).
 		this.set('subscriptionKey',  this.get('config.subscriptionKey'));
+//TODO: these should come from the application (dummy for testing)
+// eg: {{ember-facial-recognition personGroupId="a UUID" presonGroupName="MyGroup"}}
 		this.set('personGroupId', "24f6bc52-2e38-4e81-ba60-c1d81d8bd324");
-		this.set('personGroupName', "SD County DCSS");
+		this.set('personGroupName', "MyGroup");
 		if(this.get('config.subscriptionKey') === "") {
 			var subscriptionKey = prompt("Please enter a valid subscriptionKey");   
 			this.set('subscriptionKey', subscriptionKey);
@@ -88,6 +90,8 @@ export default Ember.Component.extend({
 			})
 			.done(function(data) {
 				if(data[0] !== null) {
+// TODO: move this to a function so that it can be reused
+// Perhaps with a flag: returnEmotionSummary that would activate this
 					var emotionSet = data[0].faceAttributes.emotion;
 					var result = JSON.stringify(emotionSet);
 					//Ember.Logger.log(result);

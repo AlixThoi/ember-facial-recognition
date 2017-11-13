@@ -1,0 +1,14 @@
+<H1>API Test Panel</H1>
+<div id="subscription-key-block" hidden={{if config.subscriptionKey true false}}>
+<h3>Subscription Key</h3>
+{{input id="subscriptionKey" value=config.subscriptionKey}}
+</div>
+<h3>Image URI</h3>
+{{input id="image-uri" type="text" value=model.detectRequest.imageUri}}
+<h3>
+<ul>
+<li>
+<button {{action "detect"}}>Detect</button></li>
+</ul>
+</h3>
+<textarea value={{model.detectRequest.response}} />

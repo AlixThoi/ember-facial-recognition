@@ -7,6 +7,8 @@ const Router = Ember.Router.extend({
 });
 
 Router.map(function() {
+	this.route('api');
+	this.route('camera');
 });
 
 export default Router;
