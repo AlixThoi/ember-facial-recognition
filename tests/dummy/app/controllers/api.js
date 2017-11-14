@@ -2,6 +2,7 @@ import Ember from 'ember';
 import Controller from '@ember/controller';
 
 export default Controller.extend({
+	facialRecognition: Ember.inject.service(),
 	config: {},
 	imageUri: {},
 	detectRequest: {},
@@ -14,6 +15,12 @@ export default Controller.extend({
 			var detectRequest = this.get('model.detectRequest');
 			detectRequest.set('imageUri', this.get('imageUri'));
 			detectRequest.save();
+		}, 
+		takeAPicture: function() {
+			this.get('facialRecognition').takeAPicture();
+		},
+		didSnap: function(imageUri) {
+			this.set('imageUri', imageUri);
 		}
 	}
 });

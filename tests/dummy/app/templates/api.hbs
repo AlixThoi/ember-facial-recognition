@@ -5,6 +5,7 @@
 </div>
 <h3>Image URI</h3>
 <textarea id="image-uri" type="text" value={{model.detectRequest.imageUri}} />
+<button id="take-picture-button" {{action "takeAPicture"}}>Take a picture</button>
 <h3>
 <ul>
 <li>
@@ -12,3 +13,4 @@
 </ul>
 </h3>
 <textarea id="result-area" value={{model.detectRequest.response}} />
+{{facial-recognition didSnap=(action "didSnap")}}
