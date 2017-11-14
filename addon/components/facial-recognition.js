@@ -90,8 +90,6 @@ export default Ember.Component.extend({
 			.done(function(data) {
 				if(data[0] !== null) {
 					var emotionSet = data[0].faceAttributes.emotion;
-					var result = JSON.stringify(emotionSet);
-					//Ember.Logger.log(result);
 					Ember.Logger.log(data[0].faceAttributes.age);
 					var emotionKeys = Object.keys(emotionSet);
 					var maximum = 0; 
@@ -103,6 +101,7 @@ export default Ember.Component.extend({
 						} else {
 							return emotion;
 						}
+						
 					}, "confused");
 					self.set('highestEmotion', emotion);
 					Ember.Logger.log("Emotion: " + emotion);
@@ -196,7 +195,7 @@ export default Ember.Component.extend({
 				"confidenceThreshhold": .5
 		};
 
-		return new Ember.RSVP.Promise(function(resolve, reject) { 
+		return new Ember.RSVP.Promise(function(resolve) { 
 			Ember.$.ajax({
 				url: self.get("config.serviceUrl") + "/identify",
 				beforeSend: function(xhrObj){
@@ -282,10 +281,6 @@ export default Ember.Component.extend({
 	createPerson(name) {
 		var body = {"name":name}
 		var self = this;
-		var params = {
-				"personGroupId": this.get('personGroupId'),
-		};
-
 		return new Ember.RSVP.Promise(function(resolve, reject) { 
 			Ember.$.ajax({
 				url: self.get("config.serviceUrl") + "/persongroups/" + self.get('personGroupId') + "/persons",
@@ -311,10 +306,6 @@ export default Ember.Component.extend({
 
 	trainPersonGroup() {
 		var self = this;
-		var params = {
-				// Request parameters
-				"personGroupId": self.get('personGroupId'),
-		};
 		return new Ember.RSVP.Promise(function(resolve, reject) { 
 			Ember.$.ajax({
 				url: "https://westus.api.cognitive.microsoft.com/face/v1.0/persongroups/" + self.get('personGroupId') 
@@ -339,10 +330,6 @@ export default Ember.Component.extend({
 
 	personGroupTrainingStatus() {
 		var self = this;
-		var params = {
-				// Request parameters
-				"personGroupId": self.get('personGroupId'),
-		};
 		return new Ember.RSVP.Promise(function(resolve, reject) { 
 			Ember.$.ajax({
 				url: "https://westus.api.cognitive.microsoft.com/face/v1.0/persongroups/" + self.get('personGroupId') 
@@ -368,15 +355,9 @@ export default Ember.Component.extend({
 
 	addFaceToPerson() {
 		var self = this;
-		var facePic = this.get('facePicture');
 
 		// Ember.Logger.log("uri data picture: " + this.get('facePicture'));
 		var blob = this.convertDataUriToBinary(self.get('facePicture'));
-		var params = {
-				// Request parameters
-				//"userData": "{string}",
-				// "targetFace": "{string}",
-		};
 		return new Ember.RSVP.Promise(function(resolve, reject) { 
 			Ember.$.ajax({
 				url: "https://westus.api.cognitive.microsoft.com/face/v1.0/persongroups/" + self.get('personGroupId')
@@ -403,9 +384,7 @@ export default Ember.Component.extend({
 
 	getPerson() {
 		var self = this;
-		var params = {
-				// Request parameters
-		};
+		
 		return new Ember.RSVP.Promise(function(resolve, reject) { 
 			Ember.$.ajax({
 				url: "https://westus.api.cognitive.microsoft.com/face/v1.0/persongroups/" 
@@ -446,21 +425,6 @@ export default Ember.Component.extend({
 				var firstFace = data[0];
 				var faceId = firstFace.faceId; 
 				if(faceId !== null) {
-					var emotionSet = firstFace.faceAttributes.emotion;
-					var result = JSON.stringify(emotionSet);
-					Ember.Logger.log(result);
-					Ember.Logger.log(firstFace.faceAttributes.age);
-					var emotionKeys = Object.keys(emotionSet);
-					var maximum = 0; 
-					var emotion = emotionKeys.reduce(function(emotion, emotionKey){
-						var emotionValue = emotionSet[emotionKey];
-						if (emotionValue >= maximum) {
-							maximum = emotionValue;
-							return emotionKey;
-						} else {
-							return emotion;
-						}
-					}, "confused");
 					Ember.Logger.log("face detected");
 					faceList.push(firstFace.faceId);
 
@@ -490,15 +454,17 @@ export default Ember.Component.extend({
 					var name = prompt("We don't recognize you, what's your name?");
 					var notFound = document.getElementById('not-found');
 					Ember.$(notFound).show();
-					setTimeout(function(){ Ember.$(notFound).hide(); }, 3000);
+					Ember.$(intro).hide();
+					setTimeout(function(){ Ember.$(notFound).hide(); }, 5000);
+					setTimeout(function(){Ember.$(intro).show(); }, 5000);
 					return self.createPerson(name)
-					.then(function(data) {
+					.then(function() {
 						return self.addFaceToPerson()
 					})
-					.then(function(data) {
+					.then(function() {
 						return self.trainPersonGroup()
 					})
-					.then(function(data) {
+					.then(function() {
 						return self.personGroupTrainingStatus()
 					});
 				} 
@@ -513,7 +479,6 @@ export default Ember.Component.extend({
 						Ember.Logger.log("found candidate!");
 						Ember.Logger.log(hash.identified);
 						Ember.Logger.log("this is the candidate: " + hash.identified.candidates)
-						var firstCandidate = hash.identified[0];
 						var intro = document.getElementById('intro');
 						var found = document.getElementById('found');
 						var emotionBubble = document.getElementById('emotionBubble');
@@ -530,7 +495,7 @@ export default Ember.Component.extend({
 					.then(function(hash){
 						//Ember.Logger.log("From? " + person.from);
 						Ember.Logger.log("this is person: " + JSON.stringify(hash.person));
-						Ember.Logger.log('Found: ' + JSON.stringify(hash.person));
+						Ember.Logger.log(hash.person.persistedFaceIds.length);
 						self.trainPersonGroup(); 
 					})
 					.catch(function(e){
