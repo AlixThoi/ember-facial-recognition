@@ -3,23 +3,23 @@
  * Requires:  ENV.APP.recognition.subscriptionKey in the config/environment of your application
  */
 import Ember from 'ember';
-import JSONAdapter from 'ember-data/adapters/json-api';
-export default JSONAdapter.extend({
-	init() {
-		this._super(...arguments);
-		this.set('config', Ember.getOwner(this).resolveRegistration('config:environment').APP.recognition);
-		this.set('subscriptionKey',  this.get('config.subscriptionKey'));
-	},
+import DS from 'ember-data';
+export default DS.RESTAdapter.extend({
+	config:{},
 	headers: Ember.computed('config', function() {
+		var config = this.getConfig(); 
 		return {
 			"Content-Type":"application/json",
-			"Ocp-Apim-Subscription-Key":self.get('config.subscriptionKey')
+			"Ocp-Apim-Subscription-Key":this.getConfig().subscriptionKey
 		};
 	}),
-	host: Ember.computed('config', function() {
-		return self.get('config.host');
+	host: Ember.computed('config',function() {
+		return this.getConfig().host;
 	}),
-	namespace: Ember.computed('config', function() {
-		return self.get('config.namespace');
-	})
+	namespace: Ember.computed('config',function() {
+		return this.getConfig().namespace;
+	}),
+	getConfig: function() {
+		return Ember.getOwner(this).resolveRegistration('config:environment').APP.recognition;
+	}
 });
