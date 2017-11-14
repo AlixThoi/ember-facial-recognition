@@ -13,6 +13,7 @@ export default Ember.Component.extend({
 	personGroupName: null,
 	personId: null,
 	highestEmotion: null,
+	personName: null,
 
 	init() {
 		this._super(...arguments);
@@ -220,7 +221,8 @@ export default Ember.Component.extend({
 			})
 			.fail(function(candidates) {
 				Ember.Logger.log("identify fail: " + JSON.stringify(candidates));
-				reject("adsfs");
+				//self.trainPersonGroup()
+				resolve(null);
 			});
 		});
 	},
@@ -296,15 +298,10 @@ export default Ember.Component.extend({
 				// Request body
 				data: JSON.stringify(body),
 			})
-			.done(function(person) {
-				Ember.Logger.log("created person: " + person.personId);
-				self.set('personId', person.personId);
-			})
-			.then(function(person) {
-				self.addFaceToPerson()
-			})
-			.then(function(person) {
-				resolve(person);
+			.done(function(data) {
+				Ember.Logger.log("created person: " + data.personId);
+				self.set('personId', data.personId);
+				resolve(data)
 			})
 			.fail(function(e) {
 				reject("create person error" + e);
@@ -346,25 +343,26 @@ export default Ember.Component.extend({
 				// Request parameters
 				"personGroupId": self.get('personGroupId'),
 		};
+		return new Ember.RSVP.Promise(function(resolve, reject) { 
+			Ember.$.ajax({
+				url: "https://westus.api.cognitive.microsoft.com/face/v1.0/persongroups/" + self.get('personGroupId') 
+				+ "/training",
+				beforeSend: function(xhrObj){
+					// Request headers
+					xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key",self.get('subscriptionKey'));
+				},
+				type: "GET",
+				// Request body
+				data: "",
+			})
+			.done(function(data) {
+				resolve(data);
+				Ember.Logger.log(" status group success: " + JSON.stringify(data));
 
-		Ember.$.ajax({
-			url: "https://westus.api.cognitive.microsoft.com/face/v1.0/persongroups/" + self.get('personGroupId') 
-			+ "/training",
-			beforeSend: function(xhrObj){
-				// Request headers
-				xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key",self.get('subscriptionKey'));
-			},
-			type: "GET",
-			// Request body
-			data: "",
-		})
-		.done(function(data) {
-
-			Ember.Logger.log(" status group success: " + JSON.stringify(data));
-
-		})
-		.fail(function() {
-			Ember.Logger.log("status fail")
+			})
+			.fail(function() {
+				reject("status fail")
+			});
 		});
 	},
 
@@ -379,25 +377,55 @@ export default Ember.Component.extend({
 				//"userData": "{string}",
 				// "targetFace": "{string}",
 		};
+		return new Ember.RSVP.Promise(function(resolve, reject) { 
+			Ember.$.ajax({
+				url: "https://westus.api.cognitive.microsoft.com/face/v1.0/persongroups/" + self.get('personGroupId')
+				+"/persons/" + self.get('personId') +"/persistedFaces",
+				processData: false,
+				beforeSend: function(xhrObj){
+					// Request headers
+					xhrObj.setRequestHeader("Content-Type","application/octet-stream");
+					xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key",self.get('subscriptionKey'));
+				},
+				type: "POST",
+				// Request body
+				data: blob,
+			})
+			.done(function(data) {
+				Ember.Logger.log("add face to person success");
+				resolve(data);
+			})
+			.fail(function() {
+				reject("add face to person error");
+			});
+		});
+	},
 
-		Ember.$.ajax({
-			url: "https://westus.api.cognitive.microsoft.com/face/v1.0/persongroups/" + self.get('personGroupId')
-			+"/persons/" + self.get('personId') +"/persistedFaces",
-			processData: false,
-			beforeSend: function(xhrObj){
-				// Request headers
-				xhrObj.setRequestHeader("Content-Type","application/octet-stream");
-				xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key",self.get('subscriptionKey'));
-			},
-			type: "POST",
-			// Request body
-			data: blob,
-		})
-		.done(function(data) {
-			Ember.Logger.log("add face to person success");
-		})
-		.fail(function() {
-			Ember.Logger.error("add face to person error");
+	getPerson() {
+		var self = this;
+		var params = {
+				// Request parameters
+		};
+		return new Ember.RSVP.Promise(function(resolve, reject) { 
+			Ember.$.ajax({
+				url: "https://westus.api.cognitive.microsoft.com/face/v1.0/persongroups/" 
+					+ self.get('personGroupId') + "/persons/" + self.get('personId'),
+					beforeSend: function(xhrObj){
+						// Request headers
+						xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key", self.get('subscriptionKey'));
+					},
+					type: "GET",
+					// Request body
+					data: "",
+			})
+			.done(function(data) {
+				Ember.Logger.log("got person " + data.name);
+				self.set('personName', data.name);
+				resolve(data);
+			})
+			.fail(function() {
+				reject("error getting Person");
+			})
 		});
 	},
 
@@ -441,73 +469,109 @@ export default Ember.Component.extend({
 					Ember.Logger.log('face groupd id is: ' + self.get('personGroupId'));
 					//self.personGroupTrainingStatus();
 					//return self.trainPersonGroup();
-					self.getListOfPersonGroup()
-					.then(function(listOfPersonGroup) {
-						Ember.Logger.log(listOfPersonGroup + "this is #");
-						if (listOfPersonGroup.length == 0) {
-							Ember.Logger.log("create eprson group");
-								self.createPersonGroup();
-						}
+					return self.getListOfPersonGroup()
+				}
+			})
+			.then(function(listOfPersonGroup) {
+				Ember.Logger.log(listOfPersonGroup + "this is #");
+				if (listOfPersonGroup.length == 0) {
+					Ember.Logger.log("create eprson group");
+					self.createPersonGroup();
+				}
+			})
+			.then(function() {
+				//self.personGroupTrainingStatus();
+				return self.identify(self.get('detectedFace'));
+			})
+			.then (function(identified){
+				Ember.Logger.log("IN HERE" + identified);
+				if(identified === null || identified === undefined || identified[0].candidates.length == 0) {
+					Ember.Logger.log("no candidates.. creating new person");
+					var name = prompt("We don't recognize you, what's your name?");
+					var notFound = document.getElementById('not-found');
+					Ember.$(notFound).show();
+					setTimeout(function(){ Ember.$(notFound).hide(); }, 3000);
+					return self.createPerson(name)
+					.then(function(data) {
+						return self.addFaceToPerson()
 					})
-					.then(function() {
-						self.personGroupTrainingStatus();
-						return self.identify(self.get('detectedFace'));
+					.then(function(data) {
+						return self.trainPersonGroup()
 					})
-					.then (function(identified){
-						Ember.Logger.log("IN HERE" + identified);
-						if(identified === null || identified === undefined || identified[0].candidates.length == 0) {
-							Ember.Logger.log("no candidates.. creating new person");
-							var name = prompt("We don't recognize you, what's your name?");
-							var notFound = document.getElementById('not-found');
-							Ember.$(notFound).show();
-							setTimeout(function(){ Ember.$(notFound).hide(); }, 3000);
-							var obj = {
-								"person": self.createPerson(name),
-								"from": "first-block"
-							}
-							return obj;
-						} else {
-							Ember.Logger.log("found candidate!")
-							Ember.Logger.log(identified);
-							Ember.Logger.log("this is the candidate: " + identified[0].candidates)
-							var firstCandidate = identified[0];
-							var intro = document.getElementById('intro');
-							var found = document.getElementById('found');
-							var emotionBubble = document.getElementById('emotionBubble');
-							emotionBubble.innerHTML = "You are showing... " + self.get('highestEmotion');
-							Ember.$(emotionBubble).show();
-							setTimeout(function(){ Ember.$(emotionBubble).hide(); }, 3000);
-							Ember.$(intro).hide();
-							Ember.$(found).show();
-							setTimeout(function(){ Ember.$(found).hide(); }, 3000);
-							Ember.$(intro).show();
-
-							//self.personGroupTrainingStatus();
-							var obj = {
-									"person": firstCandidate,
-									"from": "second-block"
-								}
-							return obj;
-						}
-
+					.then(function(data) {
+						return self.personGroupTrainingStatus()
+					});
+				} 
+				else {
+					self.set('personId', identified[0].candidates[0].personId);
+					self.addFaceToPerson()
+					.then(function(identified) {
+						return Ember.RSVP.hash({person: self.getPerson(), identified: identified});
 					})
-					.then(function(person){
-						Ember.Logger.log("From? " + person.from);
-						Ember.Logger.log("this is person: " + JSON.stringify(person));
-						if(person) {
-							Ember.Logger.log('Found: ' + JSON.stringify(person));
-							self.trainPersonGroup();
-						} else {
-							Ember.Logger.log("Created:" + JSON.stringify(person));
-						}
+					.then(function(hash) {
+						Ember.Logger.log("PERSON: " + JSON.stringify(hash.person));
+						Ember.Logger.log("found candidate!");
+						Ember.Logger.log(hash.identified);
+						Ember.Logger.log("this is the candidate: " + hash.identified.candidates)
+						var firstCandidate = hash.identified[0];
+						var intro = document.getElementById('intro');
+						var found = document.getElementById('found');
+						var emotionBubble = document.getElementById('emotionBubble');
+						emotionBubble.innerHTML = "You are showing... " + self.get('highestEmotion');
+						Ember.$(emotionBubble).show();
+						setTimeout(function(){ Ember.$(emotionBubble).hide(); }, 5000);
+						Ember.$(intro).hide();
+						Ember.$(found).show();
+						found.innerHTML = "We recognized you, " + self.get('personName');
+						setTimeout(function(){ Ember.$(found).hide(); }, 5000);
+						setTimeout(function(){Ember.$(intro).show(); }, 5000);
+						return hash;
+					})
+					.then(function(hash){
+						//Ember.Logger.log("From? " + person.from);
+						Ember.Logger.log("this is person: " + JSON.stringify(hash.person));
+						Ember.Logger.log('Found: ' + JSON.stringify(hash.person));
+						self.trainPersonGroup(); 
 					})
 					.catch(function(e){
 						Ember.Logger.error("Failed to identify due to: " + e);
 					});
-
 				}
+			});
+//			.then(function(identified) {
+//			return Ember.RSVP.hash({person: self.getPerson(), identified: identified});
+//			})
+//			.then(function(hash) {
+//			Ember.Logger.log("PERSON: " + JSON.stringify(hash.person));
+//			Ember.Logger.log("found candidate!");
+//			Ember.Logger.log(hash.identified);
+//			Ember.Logger.log("this is the candidate: " + hash.identified.candidates)
+//			var firstCandidate = hash.identified[0];
+//			var intro = document.getElementById('intro');
+//			var found = document.getElementById('found');
+//			var emotionBubble = document.getElementById('emotionBubble');
+//			Ember.$(intro).hide();
+//			emotionBubble.innerHTML = "You are showing... " + self.get('highestEmotion');
+//			Ember.$(emotionBubble).show();
+//			setTimeout(function(){ Ember.$(emotionBubble).hide(); }, 5000);
+//			Ember.$(found).show();
+//			found.innerHTML = "We recognized you, " + self.get('personName');
+//			setTimeout(function(){ Ember.$(found).hide(); }, 5000);
+//			Ember.$(intro).show();
+//			return hash;
+//			})
+//			.then(function(hash){
+//			//Ember.Logger.log("From? " + person.from);
+//			Ember.Logger.log("this is person: " + JSON.stringify(hash.person));
+//			Ember.Logger.log('Found: ' + JSON.stringify(hash.person));
+//			self.trainPersonGroup(); 
+//			})
+//			.catch(function(e){
+//			Ember.Logger.error("Failed to identify due to: " + e);
+//			});
 
-			})
+
+
 //			.then(function() {
 //			return self.trainPersonGroup();
 //			})
@@ -516,7 +580,7 @@ export default Ember.Component.extend({
 //			self.personGroupTrainingStatus();
 //			return self.identify(self.get('detectedFace'));
 //			})
-			
+
 
 		},
 		didError(error) {
