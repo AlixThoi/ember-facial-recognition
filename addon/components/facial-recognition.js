@@ -34,9 +34,13 @@ export default Ember.Component.extend({
 	/**
 	 * Bind the camera to this and this to the service
 	 */
-	didRender() {
+	didInsertElement() {
 		var facialRecognition = this.get('facialRecognition');
 		facialRecognition.set('component', this);
+		// Hack to locate the camera
+		var app = window.APP || window.Dummy; 
+		var camera = app.__container__.lookup('-view-registry:main')['webcam'];
+		this.set('camera', camera);
 	},
 	
 	/**
