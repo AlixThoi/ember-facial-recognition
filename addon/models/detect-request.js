@@ -7,5 +7,5 @@ export default DS.Model.extend({
 	returnFaceId: DS.attr('boolean'),
 	returnFaceLandmarks: DS.attr('boolean'),
 	returnFaceAttributes: DS.attr('raw'),
-	response: DS.belongsTo('face')
+	faces: DS.hasMany('face')
 });

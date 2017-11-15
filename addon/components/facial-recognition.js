@@ -36,8 +36,7 @@ export default Ember.Component.extend({
 	 */
 	didRender() {
 		var facialRecognition = this.get('facialRecognition');
-		facialRecognition.set('componet', this);
-		this.set('camera',Ember.$("#webcam"));
+		facialRecognition.set('component', this);
 	},
 	
 	/**
@@ -432,121 +431,15 @@ export default Ember.Component.extend({
 		 */
 		didSnap(dataUri) {
 			// Delivers a data URI when snapshot is taken.
-			var self = this;
-			var faceList = [];
-			this.set('dataUri', dataUri);
-			//calls microsoft detect API with the image snapped
-			self.microsoftDetect(dataUri)
-			.then (function(data){
-				Ember.Logger.log(data);
-				var firstFace = data[0];
-				var faceId = firstFace.faceId; 
-				if(faceId !== null) {
-					var emotionSet = firstFace.faceAttributes.emotion;
-					var result = JSON.stringify(emotionSet);
-					Ember.Logger.log(result);
-					Ember.Logger.log(firstFace.faceAttributes.age);
-					var emotionKeys = Object.keys(emotionSet);
-					var maximum = 0; 
-					var emotion = emotionKeys.reduce(function(emotion, emotionKey){
-						var emotionValue = emotionSet[emotionKey];
-						if (emotionValue >= maximum) {
-							maximum = emotionValue;
-							return emotionKey;
-						} else {
-							return emotion;
-						}
-					}, "confused");
-					Ember.Logger.log("face detected");
-					faceList.push(firstFace.faceId);
-
-					self.set('detectedFace', faceList);
-					Ember.Logger.log("face id" + self.get('detectedFace'));
-					Ember.Logger.log('face groupd id is: ' + self.get('personGroupId'));
-					//self.personGroupTrainingStatus();
-					//return self.trainPersonGroup();
-					self.getListOfPersonGroup()
-					.then(function(listOfPersonGroup) {
-						Ember.Logger.log(listOfPersonGroup + "this is #");
-						if (listOfPersonGroup.length == 0) {
-							Ember.Logger.log("create eprson group");
-								self.createPersonGroup();
-						}
-					})
-					.then(function() {
-						self.personGroupTrainingStatus();
-						return self.identify(self.get('detectedFace'));
-					})
-					.then (function(identified){
-						Ember.Logger.log("IN HERE" + identified);
-						if(identified === null || identified === undefined || identified[0].candidates.length == 0) {
-							Ember.Logger.log("no candidates.. creating new person");
-							var name = prompt("We don't recognize you, what's your name?");
-							var notFound = document.getElementById('not-found');
-							Ember.$(notFound).show();
-							setTimeout(function(){ Ember.$(notFound).hide(); }, 3000);
-							var obj = {
-								"person": self.createPerson(name),
-								"from": "first-block"
-							}
-							return obj;
-						} else {
-							Ember.Logger.log("found candidate!")
-							Ember.Logger.log(identified);
-							Ember.Logger.log("this is the candidate: " + identified[0].candidates)
-							var firstCandidate = identified[0];
-							var intro = document.getElementById('intro');
-							var found = document.getElementById('found');
-							var emotionBubble = document.getElementById('emotionBubble');
-							emotionBubble.innerHTML = "You are showing... " + self.get('highestEmotion');
-							Ember.$(emotionBubble).show();
-							setTimeout(function(){ Ember.$(emotionBubble).hide(); }, 3000);
-							Ember.$(intro).hide();
-							Ember.$(found).show();
-							setTimeout(function(){ Ember.$(found).hide(); }, 3000);
-							Ember.$(intro).show();
-
-							//self.personGroupTrainingStatus();
-							var obj = {
-									"person": firstCandidate,
-									"from": "second-block"
-								}
-							return obj;
-						}
-
-					})
-					.then(function(person){
-						Ember.Logger.log("From? " + person.from);
-						Ember.Logger.log("this is person: " + JSON.stringify(person));
-						if(person) {
-							Ember.Logger.log('Found: ' + JSON.stringify(person));
-							self.trainPersonGroup();
-						} else {
-							Ember.Logger.log("Created:" + JSON.stringify(person));
-						}
-					})
-					.catch(function(e){
-						Ember.Logger.error("Failed to identify due to: " + e);
-					});
-
-				}
-
-			})
-//			.then(function() {
-//			return self.trainPersonGroup();
-//			})
-//			.then(function() {
-//			Ember.Logger.log("person group id: " + self.get('personGroupId'));
-//			self.personGroupTrainingStatus();
-//			return self.identify(self.get('detectedFace'));
-//			})
-			
-
+			this.get('pictureTaken')(dataUri);
 		},
 		didError(error) {
 			// Fires when a WebcamError occurs.
 			Ember.Logger.log(error);
 		},
-
+		
+		registerCamera: function(camera) {
+			this.set('camera', camera);
+		}
 	}
 });

@@ -7,9 +7,11 @@
 	didSnap=(action 'didSnap')
   	didError=(action 'didError')
   		as |camera|}}
+  		<div id="camera-wrapper" onChange={{action "registerCamera" camera}}>
   		<p id='emotionBubble' visibility: hidden class="speech"></p>
   	<button class="camera-button" {{action camera.snap}}> Take Snapshot!
   		</button>
+  		</div>
 	{{/ember-webcam}}
 
 {{yield}}

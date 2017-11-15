@@ -7,7 +7,7 @@ export default AzureAdapter.extend({
 	},
 	headers: Ember.computed('config', function() {
 		var headers= this._super(...arguments);
-		headers['Content-Type']='binary/octet';
+		headers['Content-Type']='application/octet-stream';
 		return headers;
 	}),
 });

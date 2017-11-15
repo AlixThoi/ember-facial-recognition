@@ -35,7 +35,8 @@ export default Ember.Service.extend({
 	 * The camera will respond by sending the didSnap event. 
 	 */
 	takeAPicture: function() {
-		if (this.component) {
+		var component=this.get('component');
+		if (component) {
 			component.snap();
 		}
 	},
