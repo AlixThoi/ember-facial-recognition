@@ -1,3 +1,4 @@
+// addon/models/detect-request.js
 import DS from 'ember-data';
 /*
  * The base for all entities

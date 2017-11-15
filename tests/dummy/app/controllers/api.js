@@ -18,6 +18,7 @@ export default Controller.extend({
 			detectRequest.save()
 			.then(function(detectRequest){
 				Ember.Logger.log('Found ' + detectRequest.get('faces.length') + ' faces');
+				self.set('responseString', JSON.stringify(detectRequest.get('faces').objectAt(0)));
 			})
 			.catch(function(e){
 				Ember.Logger.error('Failed to detect a face: ' + e);

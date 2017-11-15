@@ -6,7 +6,6 @@ import Ember from 'ember';
 import DS from 'ember-data';
 import {v0, v4} from 'ember-uuid';
 export default DS.Adapter.extend({
-	config:{},
 	headers: Ember.computed('config', function() {
 		var config = this.getConfig(); 
 		return {
@@ -23,33 +22,40 @@ export default DS.Adapter.extend({
 	getConfig: function() {
 		return Ember.getOwner(this).resolveRegistration('config:environment').APP.recognition;
 	}, 
-	
+
+	getParameters: function() { 
+		// Implement in subclass as a hash of key/value pairs
+		return null; 
+	},
 	getUrl: function() {
-		return this.get('host') + '/' + this.get('namespace') + '/'  + this.pathForType(); 
+		return this.get('host') + 
+			'/' + this.get('namespace') + 
+			'/'  + this.pathForType() + 
+			'?' + Ember.$.param(this.getParameters()); 
 	},
 	/**
 	 * Do a POST to the MCS and return the results as an facial model
 	 * 
 	 */
-	  createRecord(store, type, snapshot) {
-	    var data = this.serialize(snapshot, { includeId: true });
-	    var self = this;
-	    snapshot.id =  v4();
-	    return new Ember.RSVP.Promise(function(resolve, reject) {
-	      Ember.$.ajax({	  
-	        type: 'POST',
-	        headers: self.get('headers'),
-	        url: self.getUrl(),
-	        dataType: 'json',
-	        processData: false,
-	        data: data
-	      }).then(function(data) {
-	    	  snapshot.response=data;
-	        Ember.run(null, resolve, snapshot);
-	      }, function(jqXHR) {
-	        jqXHR.then = null; // tame jQuery's ill mannered promises
-	        Ember.run(null, reject, jqXHR);
-	      });
-	    });
-	  }
+	createRecord(store, type, snapshot) {
+		var data = this.serialize(snapshot, { includeId: true });
+		var self = this;
+		snapshot.id =  v4();
+		return new Ember.RSVP.Promise(function(resolve, reject) {
+			Ember.$.ajax({	  
+				type: 'POST',
+				headers: self.get('headers'),
+				url: self.getUrl(),
+				dataType: 'json',
+				processData: false,
+				data: data
+			}).then(function(data) {
+				snapshot.response=data;
+				Ember.run(null, resolve, snapshot);
+			}, function(jqXHR) {
+				jqXHR.then = null; // tame jQuery's ill mannered promises
+				Ember.run(null, reject, jqXHR);
+			});
+		});
+	}
 });
