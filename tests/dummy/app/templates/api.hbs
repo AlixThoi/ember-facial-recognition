@@ -1,0 +1,16 @@
+<H1>API Test Panel</H1>
+<div id="subscription-key-block">
+<h3>Subscription Key</h3>
+{{input id="subscriptionKey" value=config.subscriptionKey}}
+</div>
+<h3>Image URI</h3>
+<textarea id="image-uri" type="text" value={{imageUri}} />
+<button id="take-picture-button" {{action "takeAPicture"}}>Take a picture</button>
+<h3>
+<ul>
+<li>
+<button {{action "detect"}}>Detect</button></li>
+</ul>
+</h3>
+<textarea id="result-area" value={{responseString}} />
+{{facial-recognition pictureTaken=(action "pictureTaken")}}

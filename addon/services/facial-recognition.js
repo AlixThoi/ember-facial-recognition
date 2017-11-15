@@ -1,57 +1,9 @@
-/* eslint-env node */
-'use strict';
 import Ember from 'ember';
 
-export default Ember.Component.extend({
-	facialRecognition: Ember.inject.service(),
-	dataUri: null,
-	facePicture: null,
-	faceResults: null,
-	config: null,
-	subscriptionKey: null,
-	detectedFace: null,
-	personGroupId: null,
-	personGroupName: null,
-	personId: null,
-	highestEmotion: null,
-	camera: null, 
+export default Ember.Service.extend({
+	component: null,
+	store: Ember.inject.service(),
 
-	init() {
-		this._super(...arguments);
-		this.set('config', Ember.getOwner(this).resolveRegistration('config:environment').APP.recognition);
-		// Replace the subscriptionKey string value with your valid subscription key (this one won't work).
-		this.set('subscriptionKey',  this.get('config.subscriptionKey'));
-//TODO: these should come from the application (dummy for testing)
-// eg: {{ember-facial-recognition personGroupId="a UUID" presonGroupName="MyGroup"}}
-		this.set('personGroupId', "24f6bc52-2e38-4e81-ba60-c1d81d8bd324");
-		this.set('personGroupName', "MyGroup");
-		if(this.get('config.subscriptionKey') === "") {
-			var subscriptionKey = prompt("Please enter a valid subscriptionKey");   
-			this.set('subscriptionKey', subscriptionKey);
-		}
-	}, 
-
-	/**
-	 * Bind the camera to this and this to the service
-	 */
-	didInsertElement() {
-		var facialRecognition = this.get('facialRecognition');
-		facialRecognition.set('component', this);
-		// Hack to locate the camera
-		var app = window.APP || window.Dummy; 
-		var camera = app.__container__.lookup('-view-registry:main')['webcam'];
-		this.set('camera', camera);
-	},
-	
-	/**
-	 * Take the picture
-	 */
-	snap: function() {
-		var camera = this .get('camera');
-		if (camera) {
-			camera.snap();
-		}
-	},
 	/**
 	 * Convert the image into Blob to pass into Microsoft Detect/addface call
 	 * @params dataURL image recieved from webcam
@@ -79,17 +31,25 @@ export default Ember.Component.extend({
 
 
 	/**
+	 * Take a picture using the web camera
+	 * The camera will respond by sending the didSnap event. 
+	 */
+	takeAPicture: function() {
+		var component=this.get('component');
+		if (component) {
+			component.snap();
+		}
+	},
+	/**
 	 * Microsoft detect call
 	 * @params faceUri the data of the picture that was taken
 	 * May have to change in the config/environment.js file, the URL to use the location where you obtained your subscription keys.
 	 */
-	microsoftDetect(faceUri) {
+	detect(faceUri) {
 		var blob = this.convertDataUriToBinary(faceUri);
 		//Ember.Logger.log(blob);
 		var self = this;
 		this.set('facePicture', faceUri);
-
-
 		var params = {
 				"returnFaceId": "true",     
 				"returnFaceAttributes": "age,emotion"
@@ -426,24 +386,5 @@ export default Ember.Component.extend({
 		.fail(function() {
 			Ember.Logger.error("add face to person error");
 		});
-	},
-
-	actions: {
-
-		/**
-		 * When picture is taken
-		 */
-		didSnap(dataUri) {
-			// Delivers a data URI when snapshot is taken.
-			this.get('pictureTaken')(dataUri);
-		},
-		didError(error) {
-			// Fires when a WebcamError occurs.
-			Ember.Logger.log(error);
-		},
-		
-		registerCamera: function(camera) {
-			this.set('camera', camera);
-		}
 	}
 });
