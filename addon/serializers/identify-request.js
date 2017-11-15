@@ -9,22 +9,22 @@ export default AzureSerializer.extend({
 		return blob;
 	},
 	/**
-	 * Parse the response and create the faces
+	 * Parse the response and create the candidates
 	 */
 	normalize(modelClass, resourceHash) {
 		var self = this; 
 		// extract the returned faces
-		var faces = resourceHash.response;
-		var faceArray=[];
-		var facesReference = {faces: {data: faceArray}};
-		faces.forEach(function(face){
-			faceArray.push({type: 'face', id: face.faceId})
+		var candidates = resourceHash.response;
+		var candidateArray=[];
+		var candidateReference = {candidates: {data: candidateArray}};
+		candidates.forEach(function(candidate){
+			candidateArray.push({type: 'candidate', id: candidate.personId})
 			// Push to the store for later reference
 			self.get('store').push({
 				data:{
-					id: face.faceId,
-					type:'face',
-					attributes: face
+					id: candidate.personId,
+					type:'candidate',
+					attributes: candidate
 				}
 			});
 		});
@@ -34,7 +34,7 @@ export default AzureSerializer.extend({
 				id:            resourceHash.id,
 				type:          modelClass.modelName,
 				attributes:    resourceHash,
-				relationships: facesReference
+				relationships: candidateReference
 		};
 
 		return { data: data };
