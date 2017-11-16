@@ -13,11 +13,11 @@ export default Controller.extend({
 	},
 	actions: {
 		loadPersonGroups: function() {
-			this.set('model.personGroups', this.store.findAll('personGroup'));
+			this.set('model.personGroups', this.store.findAll('mcsPersonGroup'));
 		},
 		detect: function() {
 			var self = this;
-			var detectRequest = this.store.createRecord('detectRequest', {imageUri: this.get('imageUri')});
+			var detectRequest = this.store.createRecord('mcsDetectRequest', {imageUri: this.get('imageUri')});
 			detectRequest.save()
 			.then(function(detectRequest){
 				Ember.Logger.log('Found ' + detectRequest.get('faces.length') + ' faces');
@@ -34,7 +34,7 @@ export default Controller.extend({
 		 */
 		identify: function(){
 			var self = this;
-			var identifyRequest = this.store.createRecord('identifyRequest', {personGroupId: this.get('model.personGroup.id')});
+			var identifyRequest = this.store.createRecord('mcsIdentifyRequest', {personGroupId: this.get('model.personGroup.id')});
 			identifyRequest.save()
 			.then(function(identifyRequest){
 				Ember.Logger.log('Found ' + identifyRequest.get('candidates.length') + ' candidates');

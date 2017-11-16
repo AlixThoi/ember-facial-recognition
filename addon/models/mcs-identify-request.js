@@ -5,5 +5,5 @@ export default DS.Model.extend({
 	personGroupId: DS.attr('string'),
 	maxNumOfCandidatesReturned: DS.attr('number'),
 	confidenceThreshold:DS.attr('number'),
-	candidates: DS.hasMany('candidate')
+	candidates: DS.hasMany('mcsCandidate')
 });

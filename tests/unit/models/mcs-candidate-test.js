@@ -1,6 +1,6 @@
 import { moduleForModel, test } from 'ember-qunit';
 
-moduleForModel('face', 'Unit | Model | face', {
+moduleForModel('mcsCandidate', 'Unit | Model | mcsCandidate', {
   // Specify the other units that are required for this test.
   needs: []
 });
