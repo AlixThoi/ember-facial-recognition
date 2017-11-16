@@ -12,6 +12,26 @@ export default DS.Adapter.extend({
 			"Ocp-Apim-Subscription-Key":this.getConfig().subscriptionKey
 		};
 	}),
+	/**
+	 * Do a POST to the MCS and return the results as an facial model
+	 * 
+	 */
+	createRecord(store, type, snapshot) {
+		snapshot.id =  v4();
+		var data = this.serialize(snapshot, { includeId: true });
+		return this.executeQuery('POST', snapshot, data);
+	},
+	/**
+	 * Find a record based on the 
+	 */
+	findRecord(store, entityType, id, snapshot) {
+	    return this.executeQuery('GET', snapshot); 
+	  },
+	  
+	 findAll(store, type, sinceToken) {
+		    return this.executeQuery('GET')
+	},
+		  
 	host: Ember.computed('config',function() {
 		return this.getConfig().host;
 	}),
@@ -27,20 +47,16 @@ export default DS.Adapter.extend({
 		return null; 
 	},
 	getUrl: function() {
-		return this.get('host') + 
-			'/' + this.get('namespace') + 
-			'/'  + this.pathForType() + 
-			'?' + Ember.$.param(this.getParameters()); 
+		var url = this.get('host') + 
+		'/' + this.get('namespace') + 
+		'/' + this.pathForType();
+		var parameters = this.getParameters();
+		if (parameters) {
+			url += '?' + Ember.$.param(parameters);
+		}
+		return url; 
 	},
-	/**
-	 * Do a POST to the MCS and return the results as an facial model
-	 * 
-	 */
-	createRecord(store, type, snapshot) {
-		snapshot.id =  v4();
-		var data = this.serialize(snapshot, { includeId: true });
-		return this.executeQuery('POST', snapshot, data);
-	},
+
 	
 	/**
 	 * Build the jQuery call and execute
@@ -57,8 +73,13 @@ export default DS.Adapter.extend({
 				processData: false,
 				data: data
 			}).then(function(response) {
-				snapshot.response=response;
-				Ember.run(null, resolve, snapshot);
+				// Check for request/response 
+				if (snapshot) {
+					snapshot.response=response;
+					Ember.run(null, resolve, snapshot);
+				} else {
+					Ember.run(null, resolve, response);
+				}
 			}, function(jqXHR) {
 				jqXHR.then = null; // tame jQuery's ill mannered promises
 				Ember.run(null, reject, jqXHR);
