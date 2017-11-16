@@ -3,10 +3,10 @@ import Ember from 'ember';
 export default AzureSerializer.extend({
 	store: Ember.inject.service(),
 	
-	serialize(snapshot) {
-		snapshot.personGroupId = snapshot.id; 
-		delete snapshot.id; 
-		return snapshot; 
+	serialize(requestHash) {
+		requestHash.personGroupId = requestHash.id; 
+		delete requestHash.id; 
+		return requestHash; 
 	},
 	/**
 	 * Parse the response and create the groups

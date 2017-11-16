@@ -8,7 +8,7 @@ export default AzureAdapter.extend({
 	pathForType: function() {
 		return 'detect';
 	},
-	/** 
+	/**
 	 * Override the content type
 	 */
 	headers: Ember.computed('config', function() {
