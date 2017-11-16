@@ -7,7 +7,6 @@ import DS from 'ember-data';
 import {v0, v4} from 'ember-uuid';
 export default DS.Adapter.extend({
 	headers: Ember.computed('config', function() {
-		var config = this.getConfig(); 
 		return {
 			"Content-Type":"application/json",
 			"Ocp-Apim-Subscription-Key":this.getConfig().subscriptionKey
@@ -38,19 +37,27 @@ export default DS.Adapter.extend({
 	 * 
 	 */
 	createRecord(store, type, snapshot) {
-		var data = this.serialize(snapshot, { includeId: true });
-		var self = this;
 		snapshot.id =  v4();
+		var data = this.serialize(snapshot, { includeId: true });
+		return this.executeQuery('POST', snapshot, data);
+	},
+	
+	/**
+	 * Build the jQuery call and execute
+	 * Returns a promise
+	 */
+	executeQuery: function(type, snapshot, data) {
+		var self = this;
 		return new Ember.RSVP.Promise(function(resolve, reject) {
 			Ember.$.ajax({	  
-				type: 'POST',
+				type: type,
 				headers: self.get('headers'),
 				url: self.getUrl(),
 				dataType: 'json',
 				processData: false,
 				data: data
-			}).then(function(data) {
-				snapshot.response=data;
+			}).then(function(response) {
+				snapshot.response=response;
 				Ember.run(null, resolve, snapshot);
 			}, function(jqXHR) {
 				jqXHR.then = null; // tame jQuery's ill mannered promises
