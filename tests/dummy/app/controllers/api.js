@@ -13,7 +13,12 @@ export default Controller.extend({
 	},
 	actions: {
 		loadPersonGroups: function() {
-			this.set('model.personGroups', this.store.findAll('mcsPersonGroup'));
+			var self = this;
+			this.store.findAll('mcsPersonGroup')
+			.then(function(personGroups) {
+				self.set('model.personGroups', personGroups);
+				self.set('model.personGroup', personGroups.objectAt(0));
+			})
 		},
 		detect: function() {
 			var self = this;
@@ -22,6 +27,7 @@ export default Controller.extend({
 			.then(function(detectRequest){
 				Ember.Logger.log('Found ' + detectRequest.get('faces.length') + ' faces');
 				self.set('detectResponseString', JSON.stringify(detectRequest.get('faces').objectAt(0)));
+				self.set('model.detectResponse', detectRequest.get('faces'));
 			})
 			.catch(function(e){
 				var errorMessage = 'Failed to detect a face: ' + e;
@@ -34,7 +40,12 @@ export default Controller.extend({
 		 */
 		identify: function(){
 			var self = this;
-			var identifyRequest = this.store.createRecord('mcsIdentifyRequest', {personGroupId: this.get('model.personGroup.id')});
+			var identifyRequest = this.store.createRecord('mcsIdentifyRequest', {
+				personGroupId: this.get('model.personGroup.id'), 
+				confidenceThreshold: .5, 
+				faceIds :[this.get('model.detectResponse').objectAt(0).get('id')] 
+			});
+			
 			identifyRequest.save()
 			.then(function(identifyRequest){
 				Ember.Logger.log('Found ' + identifyRequest.get('candidates.length') + ' candidates');

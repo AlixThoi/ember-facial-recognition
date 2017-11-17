@@ -6,6 +6,7 @@ import Ember from 'ember';
 import DS from 'ember-data';
 import {v0, v4} from 'ember-uuid';
 export default DS.Adapter.extend({
+	processData: false,
 	headers: Ember.computed('config', function() {
 		return {
 			"Content-Type":"application/json",
@@ -70,7 +71,7 @@ export default DS.Adapter.extend({
 				headers: self.get('headers'),
 				url: self.getUrl(),
 				dataType: 'json',
-				processData: false,
+				processData: self.get('processData'),
 				data: data
 			}).then(function(response) {
 				// Check for request/response 

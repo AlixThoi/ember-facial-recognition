@@ -1,6 +1,8 @@
 import DS from 'ember-data';
 
 export default DS.JSONSerializer.extend({
+	
+
 	/**
 	 * Convert the image into Blob to pass into Microsoft Detect/addface call
 	 * @params dataURL image recieved from webcam

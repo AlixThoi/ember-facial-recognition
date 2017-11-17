@@ -5,6 +5,7 @@ import Ember from 'ember';
  * Set up the adapter 
  */
 export default AzureAdapter.extend({
+	processData: false,
 	pathForType: function() {
 		return 'detect';
 	},

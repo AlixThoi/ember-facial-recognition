@@ -13,7 +13,8 @@
 <h3>Image</h3>
 <button id="take-picture-button"{{action "takeAPicture"}}>Take
 	a picture</button>
-	<textarea id="image-uri" type="text" value={{imageUri}} />
+	{{textarea value=imageUri cols="80" rows="6"}} 
+
 <h3>Detect</h3>
 	<button{{action "detect"}}>Detect</button>
 <textarea id="result-area" value={{detectResponseString}} />
@@ -21,4 +22,4 @@
 <h3>Identify</h3>	<button{{action "identify"}}>Identify</button>
 <textarea id="result-area" value={{identifyResponseString}} />
 <p/>
-{{facial-recognition}}
+{{facial-recognition pictureTaken=(action "pictureTaken")}}
