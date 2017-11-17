@@ -4,9 +4,11 @@ export default AzureSerializer.extend({
 	store: Ember.inject.service(),
 	
 	serialize(snapshot) {
-		var blob = 
+	    var json = this._super(...arguments);
+
+		json.blob= 
 			this.convertDataUriToBinary(snapshot.attr('imageUri'));
-		return blob;
+		return json;
 	},
 	/**
 	 * Parse the response and create the faces

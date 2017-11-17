@@ -63,8 +63,16 @@ export default DS.Adapter.extend({
 	 * Build the jQuery call and execute
 	 * Returns a promise
 	 */
-	executeQuery: function(type, snapshot, data) {
+	executeQuery: function(type, snapshot, json) {
 		var self = this;
+		// Set up the body
+		// Use a the blob if generated
+		var body;
+		if (json && json.blob) {
+			body = json.blob;
+		} else {
+			body = JSON.stringify(json);
+		}
 		return new Ember.RSVP.Promise(function(resolve, reject) {
 			Ember.$.ajax({	  
 				type: type,
@@ -72,12 +80,13 @@ export default DS.Adapter.extend({
 				url: self.getUrl(snapshot),
 				dataType: 'json',
 				processData: self.get('processData'),
-				data: data
+				
+				data: body
 			}).then(function(response) {
 				// Check for request/response 
-				if (snapshot) {
-					snapshot.response=response;
-					Ember.run(null, resolve, snapshot);
+				if (json) {
+					json.response=response;
+					Ember.run(null, resolve, json);
 				} else {
 					Ember.run(null, resolve, response);
 				}

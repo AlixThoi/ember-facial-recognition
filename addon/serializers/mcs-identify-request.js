@@ -3,9 +3,9 @@ import Ember from 'ember';
 export default AzureSerializer.extend({
 	store: Ember.inject.service(),
 	serialize(snapshot) {
-		return JSON.stringify({faceIds: snapshot.attr('faceIds'),
+		return {faceIds: snapshot.attr('faceIds'),
 			personGroupId: snapshot.attr('personGroupId')
-		});
+		};
 	},
 	/**
 	 * Parse the response and create the candidates

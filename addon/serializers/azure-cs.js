@@ -31,11 +31,14 @@ export default DS.JSONSerializer.extend({
 	 * Parse the response and create the groups
 	 */
 	normalize(modelClass, resourceHash) {
+		var idField = this.get('idField');
 		var data = {
-				id:            resourceHash[this.get('idField')],
+				id:            resourceHash[idField] || resourceHash.response[idField],
 				type:          modelClass.modelName,
 				attributes:    resourceHash
 		};
+		delete resourceHash[idField];
+		delete resourceHash.response;
 		return { data: data };
 	},
 	/**
@@ -44,7 +47,7 @@ export default DS.JSONSerializer.extend({
 	serialize(requestHash, options) {
 	    var json = this._super(...arguments);
 	    json[this.get('idField')] = json.id; 
-			delete json.id; 
-			return JSON.stringify(json); 
+		delete json[this.get('idField')]; 
+		return json;
 	}
 });

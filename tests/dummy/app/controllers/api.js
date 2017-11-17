@@ -57,7 +57,10 @@ export default Controller.extend({
 		},
 		addPerson: function() {
 			var person = this.get('model.person');
-			person.set('personGroupId', this.get('model.personGroup.id'));
+			person = this.store.createRecord('mcsPerson', {name: person.get('name'), 
+					userData: person.get('userData'),
+					personGroupId: this.get('model.personGroup.id')
+			});
 			person.save()
 			.then(function(person){
 				Ember.Logger.log('Created person: ' + person.get('id'));
