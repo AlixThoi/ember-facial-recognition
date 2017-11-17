@@ -13,15 +13,21 @@ export default Controller.extend({
 	},
 	actions: {
 		loadPersonGroups: function() {
-			this.set('model.personGroups', this.store.findAll('personGroup'));
+			var self = this;
+			this.store.findAll('mcsPersonGroup')
+			.then(function(personGroups) {
+				self.set('model.personGroups', personGroups);
+				self.set('model.personGroup', personGroups.objectAt(0));
+			})
 		},
 		detect: function() {
 			var self = this;
-			var detectRequest = this.store.createRecord('detectRequest', {imageUri: this.get('imageUri')});
+			var detectRequest = this.store.createRecord('mcsDetectRequest', {imageUri: this.get('imageUri')});
 			detectRequest.save()
 			.then(function(detectRequest){
 				Ember.Logger.log('Found ' + detectRequest.get('faces.length') + ' faces');
 				self.set('detectResponseString', JSON.stringify(detectRequest.get('faces').objectAt(0)));
+				self.set('model.detectResponse', detectRequest.get('faces'));
 			})
 			.catch(function(e){
 				var errorMessage = 'Failed to detect a face: ' + e;
@@ -34,11 +40,30 @@ export default Controller.extend({
 		 */
 		identify: function(){
 			var self = this;
-			var identifyRequest = this.store.createRecord('identifyRequest', {personGroupId: this.get('model.personGroup.id')});
+			var identifyRequest = this.store.createRecord('mcsIdentifyRequest', {
+				personGroupId: this.get('model.personGroup.id'), 
+				confidenceThreshold: .5, 
+				faceIds :[this.get('model.detectResponse').objectAt(0).get('id')] 
+			});
+			
 			identifyRequest.save()
 			.then(function(identifyRequest){
 				Ember.Logger.log('Found ' + identifyRequest.get('candidates.length') + ' candidates');
 				self.set('identifyResponseString', JSON.stringify(identifyRequest.get('candidates').objectAt(0)));
+			})
+			.catch(function(e){
+				Ember.Logger.error('Failed to detect any candidates: ' + e);
+			});
+		},
+		addPerson: function() {
+			var person = this.get('model.person');
+			person = this.store.createRecord('mcsPerson', {name: person.get('name'), 
+					userData: person.get('userData'),
+					personGroupId: this.get('model.personGroup.id')
+			});
+			person.save()
+			.then(function(person){
+				Ember.Logger.log('Created person: ' + person.get('id'));
 			})
 			.catch(function(e){
 				Ember.Logger.error('Failed to detect any candidates: ' + e);

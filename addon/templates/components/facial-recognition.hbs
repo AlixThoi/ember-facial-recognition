@@ -1,7 +1,5 @@
-<h1 class="center-h1" id='intro' visibility:visible> Take your photo </h1>
-<h1 class="center-h1" id='found' visibility: hidden> We recognized you</h1>
-<h1 class="center-h1" id='not-found' visibility: hidden> We don't recognize you, YET!</h1>
-
+<h1 class="center-h1" id='intro'> Take your photo </h1>
+<div style="width:1080px; height:1080px">
 {{#ember-webcam 
 	id="webcam"
 	didSnap=(action 'didSnap')
@@ -13,5 +11,5 @@
   		</button>
   		</div>
 	{{/ember-webcam}}
-
+</div>
 {{yield}}

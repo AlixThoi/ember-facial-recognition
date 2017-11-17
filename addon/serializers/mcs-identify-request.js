@@ -2,11 +2,10 @@ import AzureSerializer from './azure-cs';
 import Ember from 'ember';
 export default AzureSerializer.extend({
 	store: Ember.inject.service(),
-	
 	serialize(snapshot) {
-		var blob = 
-			this.convertDataUriToBinary(snapshot.attr('imageUri'));
-		return blob;
+		return {faceIds: snapshot.attr('faceIds'),
+			personGroupId: snapshot.attr('personGroupId')
+		};
 	},
 	/**
 	 * Parse the response and create the candidates
@@ -18,12 +17,12 @@ export default AzureSerializer.extend({
 		var candidateArray=[];
 		var candidateReference = {candidates: {data: candidateArray}};
 		candidates.forEach(function(candidate){
-			candidateArray.push({type: 'candidate', id: candidate.personId})
+			candidateArray.push({type: 'mcsCandidate', id: candidate.personId})
 			// Push to the store for later reference
 			self.get('store').push({
 				data:{
 					id: candidate.personId,
-					type:'candidate',
+					type:'mcsCandidate',
 					attributes: candidate
 				}
 			});

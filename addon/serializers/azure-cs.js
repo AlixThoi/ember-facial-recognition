@@ -1,6 +1,8 @@
 import DS from 'ember-data';
 
 export default DS.JSONSerializer.extend({
+	
+
 	/**
 	 * Convert the image into Blob to pass into Microsoft Detect/addface call
 	 * @params dataURL image recieved from webcam
@@ -24,5 +26,28 @@ export default DS.JSONSerializer.extend({
 		}
 		var blob = new Blob([uInt8Array], { type: contentType });
 		return blob;
+	},
+	/**
+	 * Parse the response and create the groups
+	 */
+	normalize(modelClass, resourceHash) {
+		var idField = this.get('idField');
+		var data = {
+				id:            resourceHash[idField] || resourceHash.response[idField],
+				type:          modelClass.modelName,
+				attributes:    resourceHash
+		};
+		delete resourceHash[idField];
+		delete resourceHash.response;
+		return { data: data };
+	},
+	/**
+	 * Default serializer
+	 */
+	serialize(requestHash, options) {
+	    var json = this._super(...arguments);
+	    json[this.get('idField')] = json.id; 
+		delete json[this.get('idField')]; 
+		return json;
 	}
 });

@@ -1,6 +1,6 @@
 import { moduleForModel, test } from 'ember-qunit';
 
-moduleForModel('detect-request', 'Unit | Model | detect request', {
+moduleForModel('mcsDetect-request', 'Unit | Model | mcsDetect request', {
   // Specify the other units that are required for this test.
   needs: []
 });

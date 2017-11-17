@@ -4,9 +4,11 @@ export default AzureSerializer.extend({
 	store: Ember.inject.service(),
 	
 	serialize(snapshot) {
-		var blob = 
+	    var json = this._super(...arguments);
+
+		json.blob= 
 			this.convertDataUriToBinary(snapshot.attr('imageUri'));
-		return blob;
+		return json;
 	},
 	/**
 	 * Parse the response and create the faces
@@ -18,12 +20,12 @@ export default AzureSerializer.extend({
 		var faceArray=[];
 		var facesReference = {faces: {data: faceArray}};
 		faces.forEach(function(face){
-			faceArray.push({type: 'face', id: face.faceId})
+			faceArray.push({type: 'mcsFace', id: face.faceId})
 			// Push to the store for later reference
 			self.get('store').push({
 				data:{
 					id: face.faceId,
-					type:'face',
+					type:'mcsFace',
 					attributes: face
 				}
 			});

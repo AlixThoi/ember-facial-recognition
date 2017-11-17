@@ -8,5 +8,5 @@ export default DS.Model.extend({
 	returnFaceId: DS.attr('boolean'),
 	returnFaceLandmarks: DS.attr('boolean'),
 	returnFaceAttributes: DS.attr('raw'),
-	faces: DS.hasMany('face')
+	faces: DS.hasMany('mcsFace')
 });

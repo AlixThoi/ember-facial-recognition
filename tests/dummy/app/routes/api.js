@@ -5,7 +5,8 @@ export default Ember.Route.extend({
 
 	model: function() {
 		return {
-			detectRequest: this.store.createRecord('detect-request')
+			detectRequest: this.store.createRecord('mcsDetectRequest'),
+			person: this.store.createRecord('mcsPerson')
 		};
 	}
 });

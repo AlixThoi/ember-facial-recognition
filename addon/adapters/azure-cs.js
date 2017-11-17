@@ -6,6 +6,7 @@ import Ember from 'ember';
 import DS from 'ember-data';
 import {v0, v4} from 'ember-uuid';
 export default DS.Adapter.extend({
+	processData: false,
 	headers: Ember.computed('config', function() {
 		return {
 			"Content-Type":"application/json",
@@ -62,21 +63,30 @@ export default DS.Adapter.extend({
 	 * Build the jQuery call and execute
 	 * Returns a promise
 	 */
-	executeQuery: function(type, snapshot, data) {
+	executeQuery: function(type, snapshot, json) {
 		var self = this;
+		// Set up the body
+		// Use a the blob if generated
+		var body;
+		if (json && json.blob) {
+			body = json.blob;
+		} else {
+			body = JSON.stringify(json);
+		}
 		return new Ember.RSVP.Promise(function(resolve, reject) {
 			Ember.$.ajax({	  
 				type: type,
 				headers: self.get('headers'),
-				url: self.getUrl(),
+				url: self.getUrl(snapshot),
 				dataType: 'json',
-				processData: false,
-				data: data
+				processData: self.get('processData'),
+				
+				data: body
 			}).then(function(response) {
 				// Check for request/response 
-				if (snapshot) {
-					snapshot.response=response;
-					Ember.run(null, resolve, snapshot);
+				if (json) {
+					json.response=response;
+					Ember.run(null, resolve, json);
 				} else {
 					Ember.run(null, resolve, response);
 				}
