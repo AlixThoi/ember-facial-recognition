@@ -2,11 +2,11 @@ import AzureSerializer from './azure-cs';
 import Ember from 'ember';
 export default AzureSerializer.extend({
 	store: Ember.inject.service(),
-	
+
 	serialize(snapshot) {
-		var blob = 
-			this.convertDataUriToBinary(snapshot.attr('imageUri'));
-		return blob;
+		
+		return snapshot;
+	
 	},
 	/**
 	 * Parse the response and create the candidates
