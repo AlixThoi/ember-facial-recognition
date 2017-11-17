@@ -4,22 +4,27 @@
 	{{input id="subscriptionKey" value=config.subscriptionKey}}
 </div>
 <h3>Person Groups</h3>
-	<button{{action "loadPersonGroups"}}>Load</button>
-<select>
-{{#each model.personGroups as |personGroup|}}
-	 <option value=personGroup>{{personGroup.name}}</option>
-{{/each}}
+<button{{action "loadPersonGroups"}}>Load</button>
+<select> {{#each model.personGroups as |personGroup|}}
+	<option value=personGroup>{{personGroup.name}}</option> {{/each}}
 </select>
 <h3>Image</h3>
 <button id="take-picture-button"{{action "takeAPicture"}}>Take
 	a picture</button>
-	{{textarea value=imageUri cols="80" rows="6"}} 
+{{textarea id="image-text" value=imageUri cols="80" rows="6"}}
 
 <h3>Detect</h3>
-	<button{{action "detect"}}>Detect</button>
-<textarea id="result-area" value={{detectResponseString}} />
+<button{{action "detect"}}>Detect</button>
+{{textarea id="detect-result-area" value=detectResponseString cols="80" rows="6"}}
 
-<h3>Identify</h3>	<button{{action "identify"}}>Identify</button>
-<textarea id="result-area" value={{identifyResponseString}} />
+<h3>Identify</h3>
+<button{{action "identify"}}>Identify</button>
+{{textarea  id="identify-result-area" value=identifyResponseString cols="80" rows="6"}}
+<p/>
+<h3>Add Person</h3>
+<button{{action "addPerson"}}>Add</button>
+Name: {{input id="name-text" value=model.person.name }}
+User Data: 
+{{input id="user-data-text" value=model.person.userData }}
 <p/>
 {{facial-recognition pictureTaken=(action "pictureTaken")}}

@@ -69,7 +69,7 @@ export default DS.Adapter.extend({
 			Ember.$.ajax({	  
 				type: type,
 				headers: self.get('headers'),
-				url: self.getUrl(),
+				url: self.getUrl(snapshot),
 				dataType: 'json',
 				processData: self.get('processData'),
 				data: data

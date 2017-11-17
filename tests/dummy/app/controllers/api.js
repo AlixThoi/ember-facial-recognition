@@ -55,6 +55,17 @@ export default Controller.extend({
 				Ember.Logger.error('Failed to detect any candidates: ' + e);
 			});
 		},
+		addPerson: function() {
+			var person = this.get('model.person');
+			person.set('personGroupId', this.get('model.personGroup.id'));
+			person.save()
+			.then(function(person){
+				Ember.Logger.log('Created person: ' + person.get('id'));
+			})
+			.catch(function(e){
+				Ember.Logger.error('Failed to detect any candidates: ' + e);
+			});
+		},
 		takeAPicture: function() {
 			this.get('facialRecognition').takeAPicture();
 		},

@@ -1,5 +1,7 @@
 import DS from 'ember-data';
 
 export default DS.Model.extend({
-	userData: DS.attr('string')
+	name:DS.attr('string'),
+	userData: DS.attr('string'),
+	personGroupId: DS.attr('string')
 });

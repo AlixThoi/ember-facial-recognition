@@ -26,5 +26,25 @@ export default DS.JSONSerializer.extend({
 		}
 		var blob = new Blob([uInt8Array], { type: contentType });
 		return blob;
+	},
+	/**
+	 * Parse the response and create the groups
+	 */
+	normalize(modelClass, resourceHash) {
+		var data = {
+				id:            resourceHash[this.get('idField')],
+				type:          modelClass.modelName,
+				attributes:    resourceHash
+		};
+		return { data: data };
+	},
+	/**
+	 * Default serializer
+	 */
+	serialize(requestHash, options) {
+	    var json = this._super(...arguments);
+	    json[this.get('idField')] = json.id; 
+			delete json.id; 
+			return JSON.stringify(json); 
 	}
 });
