@@ -3,8 +3,11 @@ import Ember from 'ember';
 export default AzureSerializer.extend({
 	store: Ember.inject.service(),
 	serialize(snapshot) {
-		return {faceIds: snapshot.attr('faceIds'),
-			personGroupId: snapshot.attr('personGroupId')
+		var json = this._super(...arguments);
+		return {faceIds: json.faceIds, 
+			personGroupId: json.personGroupId,
+			confidenceThreshold: json.confidenceThreshold,
+			id: json.id
 		};
 	},
 	/**
@@ -13,7 +16,8 @@ export default AzureSerializer.extend({
 	normalize(modelClass, resourceHash) {
 		var self = this; 
 		// extract the returned faces
-		var candidates = resourceHash.response;
+		var response = resourceHash.response[0];
+		var candidates = response.candidates;
 		var candidateArray=[];
 		var candidateReference = {candidates: {data: candidateArray}};
 		candidates.forEach(function(candidate){
