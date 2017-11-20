@@ -1,7 +1,6 @@
 import Ember from 'ember';
-import Controller from '@ember/controller';
 
-export default Controller.extend({
+export default Ember.Controller.extend({
 	facialRecognition: Ember.inject.service(),
 	config: {},
 	imageUri: {},
