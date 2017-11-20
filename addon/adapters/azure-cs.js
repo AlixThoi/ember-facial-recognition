@@ -26,13 +26,17 @@ export default DS.Adapter.extend({
 	 * Find a record based on the 
 	 */
 	findRecord(store, entityType, id, snapshot) {
-	    return this.executeQuery('GET', snapshot); 
-	  },
-	  
-	 findAll(store, type, sinceToken) {
-		    return this.executeQuery('GET')
+		return this.executeQuery('GET', snapshot); 
 	},
-		  
+
+	queryRecord(store, type, query) {
+		return this.executeQuery('GET', null, query); 
+	},
+
+	findAll(store, type, sinceToken) {
+		return this.executeQuery('GET')
+	},
+
 	host: Ember.computed('config',function() {
 		return this.getConfig().host;
 	}),
@@ -58,7 +62,7 @@ export default DS.Adapter.extend({
 		return url; 
 	},
 
-	
+
 	/**
 	 * Build the jQuery call and execute
 	 * Returns a promise
@@ -77,10 +81,10 @@ export default DS.Adapter.extend({
 			Ember.$.ajax({	  
 				type: type,
 				headers: self.get('headers'),
-				url: self.getUrl(snapshot),
+				url: self.getUrl(json),
 				dataType: 'json',
 				processData: self.get('processData'),
-				
+
 				data: body
 			}).then(function(response) {
 				// Check for request/response 

@@ -28,7 +28,9 @@ export default Controller.extend({
 				Ember.Logger.log('Found ' + detectRequest.get('faces.length') + ' faces');
 				self.set('detectResponseString', JSON.stringify(detectRequest.get('faces').objectAt(0)));
 				self.set('model.detectResponse', detectRequest.get('faces'));
+				self.set('model.detectRequest', detectRequest);
 			})
+			
 			.catch(function(e){
 				var errorMessage = 'Failed to detect a face: ' + e;
 				Ember.Logger.error(errorMessage);
@@ -57,18 +59,65 @@ export default Controller.extend({
 		},
 		addPerson: function() {
 			var person = this.get('model.person');
+			var self = this;
 			person = this.store.createRecord('mcsPerson', {name: person.get('name'), 
 					userData: person.get('userData'),
 					personGroupId: this.get('model.personGroup.id')
 			});
 			person.save()
 			.then(function(person){
+				self.set('model.person', person);
 				Ember.Logger.log('Created person: ' + person.get('id'));
 			})
 			.catch(function(e){
-				Ember.Logger.error('Failed to detect any candidates: ' + e);
+				Ember.Logger.error('Failed to create a person: ' + e);
 			});
 		},
+		addFace: function() {
+			var self = this;
+			var person = this.get('model.person');
+			var addFace = this.store.createRecord('mcsAddFace', {
+				personGroupId: this.get('model.personGroup.id'), 
+				personId: person.get('id'), imageUri: this.get('model.detectRequest.imageUri')
+			});
+			addFace.save()
+			.then(function(addFaceResult){
+				Ember.Logger.log('Created FACE: ' + addFaceResult.get('id'));
+				self.set('addFaceResult', JSON.stringify(addFaceResult));
+			})
+			.catch(function(e){
+				Ember.Logger.error('Failed to add face: ' + e);
+			});
+		},
+		
+		getPersonRequest: function() {	
+			var self = this;
+			var person = this.get('model.person');
+			var getPerson = this.store.queryRecord('mcsGetPersonRequest', {
+				personGroupId: this.get('model.personGroup.id'), 
+				personId: person.get('id')
+			})
+			.then(function(getPerson) {
+				Ember.Logger.log("asdkjflk")
+				self.set('getPersonResult', JSON.stringify(getPerson));;
+			})
+		},
+		
+		trainGroup: function() {
+			var self = this;
+			var trainGroup = this.store.createRecord('mcsTrainGroupRequest', {
+				personGroupId: this.get('model.personGroup.id') 
+			});
+			trainGroup.save()
+			.then(function(trainGroupResult){
+				Ember.Logger.log('trained group');
+			})
+			.catch(function(e){
+				Ember.Logger.log('respond with blank');
+			});
+		},
+		
+		
 		takeAPicture: function() {
 			this.get('facialRecognition').takeAPicture();
 		},
