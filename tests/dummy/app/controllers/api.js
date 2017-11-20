@@ -12,8 +12,8 @@ export default Ember.Controller.extend({
 	},
 	actions: {
 		loadPersonGroups: function() {
-			var self = this;
-			this.store.findAll('mcsPersonGroup')
+		    var self = this; 
+			this.get('facialRecognition').loadPersonGroups()
 			.then(function(personGroups) {
 				self.set('model.personGroups', personGroups);
 				self.set('model.personGroup', personGroups.objectAt(0));
@@ -21,19 +21,11 @@ export default Ember.Controller.extend({
 		},
 		detect: function() {
 			var self = this;
-			var detectRequest = this.store.createRecord('mcsDetectRequest', {imageUri: this.get('imageUri')});
-			detectRequest.save()
+			this.get('facialRecognition').detect(this.get('imageUri'))
 			.then(function(detectRequest){
-				Ember.Logger.log('Found ' + detectRequest.get('faces.length') + ' faces');
 				self.set('detectResponseString', JSON.stringify(detectRequest.get('faces').objectAt(0)));
 				self.set('model.detectResponse', detectRequest.get('faces'));
 				self.set('model.detectRequest', detectRequest);
-			})
-			
-			.catch(function(e){
-				var errorMessage = 'Failed to detect a face: ' + e;
-				Ember.Logger.error(errorMessage);
-				self.set('detectResponseString',errorMessage);
 			});
 		}, 
 		/**
@@ -41,78 +33,60 @@ export default Ember.Controller.extend({
 		 */
 		identify: function(){
 			var self = this;
-			var identifyRequest = this.store.createRecord('mcsIdentifyRequest', {
-				personGroupId: this.get('model.personGroup.id'), 
-				confidenceThreshold: .5, 
-				faceIds :[this.get('model.detectResponse').objectAt(0).get('id')] 
-			});
-			
-			identifyRequest.save()
+			this.get('facialRecognition').identify( 
+			        this.get('model.personGroup.id'), 
+			        config.identificationThreshold, 
+			        [this.get('model.detectResponse').objectAt(0).get('id')] )
 			.then(function(identifyRequest){
-				Ember.Logger.log('Found ' + identifyRequest.get('candidates.length') + ' candidates');
 				self.set('identifyResponseString', JSON.stringify(identifyRequest.get('candidates').objectAt(0)));
-			})
-			.catch(function(e){
-				Ember.Logger.error('Failed to detect any candidates: ' + e);
 			});
 		},
 		addPerson: function() {
 			var person = this.get('model.person');
 			var self = this;
-			person = this.store.createRecord('mcsPerson', {name: person.get('name'), 
-					userData: person.get('userData'),
-					personGroupId: this.get('model.personGroup.id')
-			});
-			person.save()
+			this.get('facialRecognition').addPerson(
+			        this.get('model.personGroup.id'), 
+			        person.get('name'), 
+					person.get('userData'))
 			.then(function(person){
 				self.set('model.person', person);
-				Ember.Logger.log('Created person: ' + person.get('id'));
-			})
-			.catch(function(e){
-				Ember.Logger.error('Failed to create a person: ' + e);
 			});
 		},
 		addFace: function() {
 			var self = this;
 			var person = this.get('model.person');
-			var addFace = this.store.createRecord('mcsAddFace', {
-				personGroupId: this.get('model.personGroup.id'), 
-				personId: person.get('id'), imageUri: this.get('model.detectRequest.imageUri')
-			});
-			addFace.save()
+			this.get('facialRecognition').addFace(
+			        this.get('model.personGroup.id'), 
+			        person.get('id'), 
+			        this.get('model.detectRequest.imageUri')
+	        )
 			.then(function(addFaceResult){
-				Ember.Logger.log('Created FACE: ' + addFaceResult.get('id'));
 				self.set('addFaceResult', JSON.stringify(addFaceResult));
-			})
-			.catch(function(e){
-				Ember.Logger.error('Failed to add face: ' + e);
 			});
 		},
 		
 		getPersonRequest: function() {	
 			var self = this;
 			var person = this.get('model.person');
-			var getPerson = this.store.queryRecord('mcsGetPersonRequest', {
-				personGroupId: this.get('model.personGroup.id'), 
-				personId: person.get('id')
-			})
+			this.get('facialRecognition').getPerson(
+			    this.get('model.personGroup.id'), 
+				person.get('id')
+			)
 			.then(function(getPerson) {
 				Ember.Logger.log("asdkjflk")
 				self.set('getPersonResult', JSON.stringify(getPerson));;
-			})
+			});
 		},
 		
 		trainGroup: function() {
 			var self = this;
-			var trainGroup = this.store.createRecord('mcsTrainGroupRequest', {
-				personGroupId: this.get('model.personGroup.id') 
-			});
-			trainGroup.save()
+			this.get('facialRecognition').trainGroup( this.get('model.personGroup.id'))
 			.then(function(trainGroupResult){
-				Ember.Logger.log('trained group');
+			    // We are assuming that this works
 			})
 			.catch(function(e){
-				Ember.Logger.log('respond with blank');
+			    //TODO fix error thrown by jquery
+				// ignore error
 			});
 		},
 		

@@ -37,9 +37,11 @@ module.exports = function(environment) {
 	  recognition.host="https://westus.api.cognitive.microsoft.com";
 	  recognition.namespace="face/v1.0";
       recognition.serviceUrl=recognition.host + "/" + recognition.namespace;
+      recognition.identificationThreshold = 0.5;
       recognition.detectUrl=recognition.serviceUrl + "/detect?";
       recognition.createFaceListUrl=recognition.serviceUrl + "/facelists/{faceListId}?";
       recognition.addFaceToListUrl=recognition.serviceUrl + "/facelists/281fce7e-5b9d-446e-a30b-a73dcd8727f7/persistedFaces?"
+      
   }
 
   if (environment === 'test') {
