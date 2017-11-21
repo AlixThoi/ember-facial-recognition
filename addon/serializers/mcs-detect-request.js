@@ -20,12 +20,12 @@ export default AzureSerializer.extend({
 		var faceArray=[];
 		var facesReference = {faces: {data: faceArray}};
 		faces.forEach(function(face){
-			faceArray.push({type: 'mcsFace', id: face.faceId})
+			faceArray.push({type: 'mcs-face', id: face.faceId})
 			// Push to the store for later reference
 			self.get('store').push({
 				data:{
 					id: face.faceId,
-					type:'mcsFace',
+					type:'mcs-face',
 					attributes: face
 				}
 			});

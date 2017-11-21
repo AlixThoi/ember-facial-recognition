@@ -39,6 +39,8 @@ export default Ember.Service.extend({
         return detectRequest.save()
         .then(function(detectRequest){
             Ember.Logger.log('Found ' + detectRequest.get('faces.length') + ' faces');
+            Ember.Logger.log(detectRequest);
+            Ember.Logger.log(JSON.stringify(detectRequest));
             return detectRequest; 
         })
         .catch(function(e){
@@ -81,6 +83,7 @@ export default Ember.Service.extend({
         return person.save()
         .then(function(person){
              Ember.Logger.log('Created person: ' + person.get('id'));
+             return person;
         })
         .catch(function(e){
             Ember.Logger.error('Failed to create a person: ' + e);
@@ -101,6 +104,7 @@ export default Ember.Service.extend({
         .then(function(addFaceResult){
             Ember.Logger.log('Created FACE: ' + addFaceResult.get('id'));
             self.set('addFaceResult', JSON.stringify(addFaceResult));
+            return addFaceResult;
         })
         .catch(function(e){
             Ember.Logger.error('Failed to add face: ' + e);
@@ -118,7 +122,8 @@ export default Ember.Service.extend({
             personId: id
         })
         .then(function(getPerson) {
-            Ember.Logger.log("Found " + person.get('id'));
+            Ember.Logger.log("Found " + getPerson.get('id'));
+            return getPerson;
         })
     },
 

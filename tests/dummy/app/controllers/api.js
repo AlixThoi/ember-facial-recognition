@@ -35,7 +35,7 @@ export default Ember.Controller.extend({
 			var self = this;
 			this.get('facialRecognition').identify( 
 			        this.get('model.personGroup.id'), 
-			        config.identificationThreshold, 
+			        this.get('config.identificationThreshold'), 
 			        [this.get('model.detectResponse').objectAt(0).get('id')] )
 			.then(function(identifyRequest){
 				self.set('identifyResponseString', JSON.stringify(identifyRequest.get('candidates').objectAt(0)));

@@ -21,12 +21,12 @@ export default AzureSerializer.extend({
 		var candidateArray=[];
 		var candidateReference = {candidates: {data: candidateArray}};
 		candidates.forEach(function(candidate){
-			candidateArray.push({type: 'mcsCandidate', id: candidate.personId})
+			candidateArray.push({type: 'mcs-candidate', id: candidate.personId})
 			// Push to the store for later reference
 			self.get('store').push({
 				data:{
 					id: candidate.personId,
-					type:'mcsCandidate',
+					type:'mcs-candidate',
 					attributes: candidate
 				}
 			});
