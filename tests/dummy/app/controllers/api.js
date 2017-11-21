@@ -52,7 +52,7 @@ export default Ember.Controller.extend({
 					person.get('userData'))
 			.then(function(person){
 				self.set('model.person', person);
-				self.set('addPersonResponse', Ember.stringify(person));
+				self.set('addPersonResponse', JSON.stringify(person));
 			});
 		},
 		addFace: function() {
