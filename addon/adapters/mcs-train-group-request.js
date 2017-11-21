@@ -6,6 +6,7 @@ import Ember from 'ember';
  */
 export default AzureAdapter.extend({
 	processData: false,
+	dataType: 'text',
 	pathForType: function() {
 		return 'persongroups/{personGroupId}/train';
 	},

@@ -38,7 +38,9 @@ export default Ember.Controller.extend({
 			        this.get('config.identificationThreshold'), 
 			        [this.get('model.detectResponse').objectAt(0).get('id')] )
 			.then(function(identifyRequest){
-				self.set('identifyResponseString', JSON.stringify(identifyRequest.get('candidates').objectAt(0)));
+			    var candidate = identifyRequest.get('candidates').objectAt(0); 
+				self.set('identifyResponseString', JSON.stringify(candidate));
+				self.set('model.person.id', candidate.get('personId'));
 			});
 		},
 		addPerson: function() {
@@ -50,6 +52,7 @@ export default Ember.Controller.extend({
 					person.get('userData'))
 			.then(function(person){
 				self.set('model.person', person);
+				self.set('addPersonResponse', Ember.stringify(person));
 			});
 		},
 		addFace: function() {

@@ -7,6 +7,7 @@ import DS from 'ember-data';
 import {v0, v4} from 'ember-uuid';
 export default DS.Adapter.extend({
 	processData: false,
+	dataType: 'json',
 	headers: Ember.computed('config', function() {
 		return {
 			"Content-Type":"application/json",
@@ -82,7 +83,7 @@ export default DS.Adapter.extend({
 				type: type,
 				headers: self.get('headers'),
 				url: self.getUrl(json),
-				dataType: 'json',
+				dataType: self.dataType,
 				processData: self.get('processData'),
 
 				data: body

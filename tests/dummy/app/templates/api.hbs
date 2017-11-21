@@ -8,31 +8,37 @@
 <select> {{#each model.personGroups as |personGroup|}}
 	<option value=personGroup>{{personGroup.name}}</option> {{/each}}
 </select>
-<h3>Image</h3>
+<h3>Image (Paste an image URI or...)</h3>
 <button id="take-picture-button"{{action "takeAPicture"}}>Take
 	a picture</button>
+<p>
+{{facial-recognition pictureTaken=(action "pictureTaken")}}
 {{textarea id="image-text" value=imageUri cols="80" rows="6"}}
-
-<h3>Detect</h3>
+</p>
+<h3>Detect Features (from image URI)</h3>
 <button{{action "detect"}}>Detect</button>
+<p>
 {{textarea id="detect-result-area" value=detectResponseString cols="80" rows="6"}}
-
+</p>
 <h3>Identify</h3>
 <button{{action "identify"}}>Identify</button>
 {{textarea  id="identify-result-area" value=identifyResponseString cols="80" rows="6"}}
 
 <h3>Get Person</h3>
-<button{{action "getPersonRequest"}}>Add</button>
+<button{{action "getPersonRequest"}}>Get</button>
 person id: {{input id="person-id-text" value=model.person.id}}
 {{textarea  id="get-person-result-area" value=getPersonResult cols="80" rows="6"}}
 <p/>
 
 <p/>
 <h3>Create Person</h3>
-<button{{action "addPerson"}}>Add</button>
+<button{{action "addPerson"}}>Create</button>
 Name: {{input id="name-text" value=model.person.name }}
 User Data: 
 {{input id="user-data-text" value=model.person.userData }}
+<p>
+{{textarea  id="add-person-result-area" value=addPersonResponse cols="80" rows="6"}}
+</p>
 <p/>
 
 <h3>Add Face</h3>
@@ -43,4 +49,4 @@ User Data:
 <button{{action "trainGroup"}}>Add</button>
 {{textarea  id="train-person-result-area" value=trainPersonResult cols="80" rows="6"}}
 
-{{facial-recognition pictureTaken=(action "pictureTaken")}}
+
