@@ -1,7 +1,11 @@
-/* eslint-env node */
+
 'use strict';
 import Ember from 'ember';
-
+const {
+    Component,
+    computed,
+    getOwner
+  } = Ember;
 export default Ember.Component.extend({
 	facialRecognition: Ember.inject.service(),
 	camera: null, 
@@ -14,7 +18,8 @@ export default Ember.Component.extend({
 		facialRecognition.set('component', this);
 		// Hack to locate the camera
 		var app = window.APP || window.Dummy; 
-		var camera = app.__container__.lookup('-view-registry:main')['webcam'];
+		 var applicationInstance = getOwner(this);
+		var camera = applicationInstance.lookup('-view-registry:main')['webcam'];
 		this.set('camera', camera);
 	},
 	

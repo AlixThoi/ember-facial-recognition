@@ -21,11 +21,27 @@
 <h3>Identify</h3>
 <button{{action "identify"}}>Identify</button>
 {{textarea  id="identify-result-area" value=identifyResponseString cols="80" rows="6"}}
+
+<h3>Get Person</h3>
+<button{{action "getPersonRequest"}}>Add</button>
+person id: {{input id="person-id-text" value=model.person.id}}
+{{textarea  id="get-person-result-area" value=getPersonResult cols="80" rows="6"}}
 <p/>
-<h3>Add Person</h3>
+
+<p/>
+<h3>Create Person</h3>
 <button{{action "addPerson"}}>Add</button>
 Name: {{input id="name-text" value=model.person.name }}
 User Data: 
 {{input id="user-data-text" value=model.person.userData }}
 <p/>
+
+<h3>Add Face</h3>
+<button{{action "addFace"}}>Add</button>
+{{textarea  id="face-result-area" value=addFaceResult cols="80" rows="6"}}
+
+<h3>Train Person Group</h3>
+<button{{action "trainGroup"}}>Add</button>
+{{textarea  id="train-person-result-area" value=trainPersonResult cols="80" rows="6"}}
+
 {{facial-recognition pictureTaken=(action "pictureTaken")}}
