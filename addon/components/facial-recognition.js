@@ -6,14 +6,19 @@ const {
     computed,
     getOwner
   } = Ember;
+import Webcam from 'webcamjs';
 export default Ember.Component.extend({
 	facialRecognition: Ember.inject.service(),
-	camera: null, 
-
+	camera: null,
+	hideButton: false,
+	picturePending: false,
+	height: 1024, 
+	width: 760,
 	/**
 	 * Bind the camera to this and this to the service
 	 */
 	didInsertElement() {
+	    var self = this;
 		var facialRecognition = this.get('facialRecognition');
 		facialRecognition.set('component', this);
 		// Hack to locate the camera
@@ -21,15 +26,29 @@ export default Ember.Component.extend({
 		 var applicationInstance = getOwner(this);
 		var camera = applicationInstance.lookup('-view-registry:main')['webcam'];
 		this.set('camera', camera);
+		// Register for the 'live' callback 
+		Webcam.set({
+		    dest_height: this.get('height'),
+		    dest_width: this.get('width')
+		});
+		Webcam.on('live', function() {
+		    // Check for a pending picture when avalable
+		    if (self.get('picturePending')) {
+		        self.snap();
+		    }
+		});
 	},
 	
 	/**
 	 * Take the picture
 	 */
 	snap: function() {
-		var camera = this .get('camera');
+		var camera = this.get('camera');
 		if (camera) {
+		    this.set('picturePending', false);
 			camera.snap();
+		} else {
+		    this.set('picturePending', true);
 		}
 	},
 

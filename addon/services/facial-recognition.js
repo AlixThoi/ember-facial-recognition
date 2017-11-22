@@ -1,8 +1,25 @@
 import Ember from 'ember';
-
+/**
+ * The common service for facial recognition
+ * Use: 
+ * export default Ember.Controller ({
+ *     facialRecognition: Ember.inject.service(),
+ * ...
+ *
+    detectAndIdentify: function() {
+        var self = this;
+        this.get('facialRecognition').detect(personGroup)
+        .then(function(detectRequest){
+            // detected a face - attempt the identify with the first record
+            self.identifyAndRoute(detectRequest.get('faces').objectAt(0).get('faceId'));
+         });
+    }, 
+ *  
+ */
 export default Ember.Service.extend({
     component: null,
     store: Ember.inject.service(),
+    picturePending: false, 
     /**
      * Take a picture using the web camera The camera will respond by sending
      * the didSnap event.
@@ -11,12 +28,28 @@ export default Ember.Service.extend({
         var component=this.get('component');
         if (component) {
             component.snap();
+        } else {
+            // Wait for the component rendering
+            this.set('picturePending', true);
         }
     },
-
+    /**
+     * Set the facial recognition component - called form didInsertElement() on components/facial-recognition
+     */
+    componentSet: function(component) {
+        if (this.get('picturePending')) {
+            this.set('picturePending', false);
+            this.takeAPicture();
+        }
+    },
+    /**
+     * Configure the service and set up observers 
+     */
     init() {
         this._super(...arguments);
         this.set('config', Ember.getOwner(this).resolveRegistration('config:environment').APP.recognition);
+        // Set up the observer to take a picture when the component is ready
+        this.addObserver('component', this, this.componentSet);
     },
     /**
      * Load the person groups for later use

@@ -1,15 +1,11 @@
-<h1 class="center-h1" id='intro'> Take your photo </h1>
-<div style="width:1080px; height:1080px">
 {{#ember-webcam 
 	id="webcam"
 	didSnap=(action 'didSnap')
   	didError=(action 'didError')
   		as |camera|}}
-  		<div id="camera-wrapper" onChange={{action "registerCamera" camera}}>
-  		<p id='emotionBubble' visibility: hidden class="speech"></p>
-  	<button class="camera-button" {{action camera.snap}}> Take Snapshot!
+  		<div id="camera-wrapper" hidden={{hideButton}}>
+   		<button class="camera-button" {{action camera.snap}}> Take Snapshot!
   		</button>
   		</div>
 	{{/ember-webcam}}
-</div>
 {{yield}}
