@@ -6,5 +6,6 @@ import Ember from 'ember';
 export default AzureAdapter.extend({
 	pathForType: function() {
 		return 'identify';
-	}
+	},
+
 });

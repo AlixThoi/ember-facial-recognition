@@ -14,10 +14,12 @@ export default Ember.Controller.extend({
 		loadPersonGroups: function() {
 			var self = this;
 			this.store.findAll('mcsPersonGroup')
+
 			.then(function(personGroups) {
 				self.set('model.personGroups', personGroups);
 				self.set('model.personGroup', personGroups.objectAt(0));
 			})
+
 		},
 		detect: function() {
 			var self = this;
