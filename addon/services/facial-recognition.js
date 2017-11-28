@@ -111,7 +111,8 @@ export default Ember.Service.extend({
         person = this.get('store').createRecord('mcsPerson', {
             personGroupId: personGroupId ,
             name: name, 
-            userData: userData
+            userData: userData,
+            personId: person.get('id'),
         });
         return person.save()
         .then(function(person){
