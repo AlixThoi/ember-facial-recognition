@@ -106,13 +106,11 @@ export default Ember.Service.extend({
      * Add the person to the default person group
      */
     addPerson: function(personGroupId, name, userData) {
-        var person = this.get('model.person');
         var self = this;
-        person = this.get('store').createRecord('mcsPerson', {
+        var person = this.get('store').createRecord('mcsPerson', {
             personGroupId: personGroupId ,
             name: name, 
-            userData: userData,
-            personId: person.get('id'),
+            userData: userData
         });
         return person.save()
         .then(function(person){
@@ -128,7 +126,6 @@ export default Ember.Service.extend({
      */
     addFace: function(personGroupId, personId, imageUri) {
         var self = this;
-        var person = this.get('model.person');
         var addFace = this.get('store').createRecord('mcsAddFace', {
             personGroupId: personGroupId, 
             personId: personId,
@@ -150,7 +147,6 @@ export default Ember.Service.extend({
      */
     getPerson: function(personGroup, id) {  
         var self = this;
-        var person = this.get('model.person');
         return this.get('store').queryRecord('mcsGetPersonRequest', {
             personGroupId: personGroup, 
             personId: id
