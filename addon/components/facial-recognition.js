@@ -93,7 +93,7 @@ export default Ember.Component.extend({
 					var emotionSet = data[0].faceAttributes.emotion;
 					var result = JSON.stringify(emotionSet);
 					//Ember.Logger.log(result);
-					Ember.Logger.log(data[0].faceAttributes.age);
+					Ember.Logger.log("Approximate age: " + data[0].faceAttributes.age);
 					var emotionKeys = Object.keys(emotionSet);
 					var maximum = 0;
 					var emotion = emotionKeys.reduce(function (emotion, emotionKey) {
@@ -106,10 +106,10 @@ export default Ember.Component.extend({
 						}
 					}, "confused");
 					self.set('highestEmotion', emotion);
-					Ember.Logger.log("Emotion: " + emotion);
+					Ember.Logger.log("Strongest Emotion: " + emotion);
 					resolve(data);
 				} else {
-					Ember.Logger.log("Error in face detect. Check subscription key.");
+					Ember.Logger.log("Error in face detection. Double check subscription key.");
 				}
 			});
 		});
@@ -206,18 +206,16 @@ export default Ember.Component.extend({
 				data: JSON.stringify(params),
 			})
 				.done(function (candidates) {
-					Ember.Logger.log("candidates = " + JSON.stringify(candidates));
 					if (candidates === null || candidates[0].candidates.length == 0) {
 						resolve(null);
 					}
 					else {
 						resolve(candidates);
-						Ember.Logger.log("identify sucess: " + candidates)
-
+						Ember.Logger.log("Successfully Identified Candidate");
 					}
 				})
 				.fail(function (candidates) {
-					Ember.Logger.log("identify fail: " + JSON.stringify(candidates));
+					Ember.Logger.log("Failed to Identify Candidate");
 					//self.trainPersonGroup()
 					resolve(null);
 				});
@@ -264,15 +262,13 @@ export default Ember.Component.extend({
 				type: "GET",
 				// Request body
 				data: "",
-			})
-				.done(function (data) {
-					Ember.Logger.log("getting list of people group: " + data);
-					Ember.Logger.log(data);
-					resolve(data);
-				})
-				.fail(function () {
-					reject("Person group List error");
-				});
+			}).done(function (data) {
+				Ember.Logger.log("People Group List");
+				Ember.Logger.log(data);
+				resolve(data);
+			}).fail(function () {
+				reject("Person group List error");
+			});
 		});
 	},
 
@@ -323,14 +319,12 @@ export default Ember.Component.extend({
 				type: "POST",
 				// Request body
 				data: "",
-			})
-				.done(function (data) {
-					Ember.Logger.log("training person group success");
-					resolve(data);
-				})
-				.fail(function () {
-					reject("training person group error");
-				});
+			}).done(function (data) {
+				Ember.Logger.log("Person Group successfully trained.")
+				resolve(data);
+			}).fail(function () {
+				reject("Error: Failed to train person group.");
+			});
 		});
 	},
 
@@ -389,11 +383,10 @@ export default Ember.Component.extend({
 				data: blob,
 			})
 				.done(function (data) {
-					Ember.Logger.log("add face to person success");
 					resolve(data);
 				})
 				.fail(function () {
-					reject("add face to person error");
+					reject("Error: Failed to add face to person");
 				});
 		});
 	},
@@ -414,15 +407,13 @@ export default Ember.Component.extend({
 				type: "GET",
 				// Request body
 				data: "",
+			}).done(function (data) {
+				Ember.Logger.log("Successfully got person: " + data.name);
+				self.set('personName', data.name);
+				resolve(data);
+			}).fail(function () {
+				reject("Error: Failed to get person");
 			})
-				.done(function (data) {
-					Ember.Logger.log("got person " + data.name);
-					self.set('personName', data.name);
-					resolve(data);
-				})
-				.fail(function () {
-					reject("error getting Person");
-				})
 		});
 	},
 
@@ -438,52 +429,48 @@ export default Ember.Component.extend({
 			this.set('dataUri', dataUri);
 			//calls microsoft detect API with the image snapped
 			self.microsoftDetect(dataUri)
-				.then(function (data) {
+				.then(data => {
+					Ember.Logger.log("Detected Face Data");
 					Ember.Logger.log(data);
-					var firstFace = data[0];
-					var faceId = firstFace.faceId;
-					if (faceId !== null) {
-						var emotionSet = firstFace.faceAttributes.emotion;
-						var result = JSON.stringify(emotionSet);
-						Ember.Logger.log(result);
-						Ember.Logger.log(firstFace.faceAttributes.age);
-						var emotionKeys = Object.keys(emotionSet);
-						var maximum = 0;
-						var emotion = emotionKeys.reduce(function (emotion, emotionKey) {
-							var emotionValue = emotionSet[emotionKey];
-							if (emotionValue >= maximum) {
-								maximum = emotionValue;
-								return emotionKey;
-							} else {
-								return emotion;
-							}
-						}, "confused");
-						Ember.Logger.log("face detected");
-						faceList.push(firstFace.faceId);
 
-						self.set('detectedFace', faceList);
-						Ember.Logger.log("face id" + self.get('detectedFace'));
-						Ember.Logger.log('face groupd id is: ' + self.get('personGroupId'));
-						//self.personGroupTrainingStatus();
-						//return self.trainPersonGroup();
-						return self.getListOfPersonGroup()
+					if(data && data.length > 0) {
+						var firstFace = data[0];
+						// var faceId = firstFace.faceId;
+						if (firstFace.faceId) {
+							var emotionSet = firstFace.faceAttributes.emotion;
+							var result = JSON.stringify(emotionSet);
+
+							var emotionKeys = Object.keys(emotionSet);
+							var maximum = 0;
+							var emotion = emotionKeys.reduce(function (emotion, emotionKey) {
+								var emotionValue = emotionSet[emotionKey];
+								if (emotionValue >= maximum) {
+									maximum = emotionValue;
+									return emotionKey;
+								} else {
+									return emotion;
+								}
+							}, "confused");
+							Ember.Logger.log("Face Detection Successful");
+							faceList.push(firstFace.faceId);
+	
+							self.set('detectedFace', faceList);
+							//self.personGroupTrainingStatus();
+							//return self.trainPersonGroup();
+							return self.getListOfPersonGroup()
+						}
 					}
-				})
-				.then(function (listOfPersonGroup) {
-					Ember.Logger.log(listOfPersonGroup + "this is #");
+				}).then(function (listOfPersonGroup) {
 					if (listOfPersonGroup.length == 0) {
-						Ember.Logger.log("create eprson group");
+						Ember.Logger.log("No person group found. Creating person group.");
 						self.createPersonGroup();
 					}
-				})
-				.then(function () {
+				}).then(function () {
 					//self.personGroupTrainingStatus();
 					return self.identify(self.get('detectedFace'));
-				})
-				.then(function (identified) {
-					Ember.Logger.log("IN HERE" + identified);
-					if (identified === null || identified === undefined || identified[0].candidates.length == 0) {
-						Ember.Logger.log("no candidates.. creating new person");
+				}).then(function (identified) {
+					if (!identified || identified[0].candidates.length == 0) {
+						Ember.Logger.log("No candidates found... creating new person");
 						var name = prompt("We don't recognize you, what's your name?");
 						var notFound = document.getElementById('not-found');
 						Ember.$(notFound).show();
@@ -501,15 +488,9 @@ export default Ember.Component.extend({
 					}
 					else {
 						self.set('personId', identified[0].candidates[0].personId);
-						self.addFaceToPerson()
-							.then(function (identified) {
+						self.addFaceToPerson().then(identified => {
 								return Ember.RSVP.hash({ person: self.getPerson(), identified: identified });
-							})
-							.then(function (hash) {
-								Ember.Logger.log("PERSON: " + JSON.stringify(hash.person));
-								Ember.Logger.log("found candidate!");
-								Ember.Logger.log(hash.identified);
-								Ember.Logger.log("this is the candidate: " + hash.identified.candidates)
+							}).then(hash => {
 								var firstCandidate = hash.identified[0];
 								var intro = document.getElementById('intro');
 								var found = document.getElementById('found');
@@ -523,67 +504,18 @@ export default Ember.Component.extend({
 								setTimeout(function () { Ember.$(found).hide(); }, 5000);
 								setTimeout(function () { Ember.$(intro).show(); }, 5000);
 								return hash;
-							})
-							.then(function (hash) {
+							}).then(function (hash) {
 								//Ember.Logger.log("From? " + person.from);
-								Ember.Logger.log("this is person: " + JSON.stringify(hash.person));
-								Ember.Logger.log('Found: ' + JSON.stringify(hash.person));
 								self.trainPersonGroup();
-							})
-							.catch(function (e) {
+							}).catch(function (e) {
 								Ember.Logger.error("Failed to identify due to: " + e);
 							});
 					}
 				});
-			//			.then(function(identified) {
-			//			return Ember.RSVP.hash({person: self.getPerson(), identified: identified});
-			//			})
-			//			.then(function(hash) {
-			//			Ember.Logger.log("PERSON: " + JSON.stringify(hash.person));
-			//			Ember.Logger.log("found candidate!");
-			//			Ember.Logger.log(hash.identified);
-			//			Ember.Logger.log("this is the candidate: " + hash.identified.candidates)
-			//			var firstCandidate = hash.identified[0];
-			//			var intro = document.getElementById('intro');
-			//			var found = document.getElementById('found');
-			//			var emotionBubble = document.getElementById('emotionBubble');
-			//			Ember.$(intro).hide();
-			//			emotionBubble.innerHTML = "You are showing... " + self.get('highestEmotion');
-			//			Ember.$(emotionBubble).show();
-			//			setTimeout(function(){ Ember.$(emotionBubble).hide(); }, 5000);
-			//			Ember.$(found).show();
-			//			found.innerHTML = "We recognized you, " + self.get('personName');
-			//			setTimeout(function(){ Ember.$(found).hide(); }, 5000);
-			//			Ember.$(intro).show();
-			//			return hash;
-			//			})
-			//			.then(function(hash){
-			//			//Ember.Logger.log("From? " + person.from);
-			//			Ember.Logger.log("this is person: " + JSON.stringify(hash.person));
-			//			Ember.Logger.log('Found: ' + JSON.stringify(hash.person));
-			//			self.trainPersonGroup(); 
-			//			})
-			//			.catch(function(e){
-			//			Ember.Logger.error("Failed to identify due to: " + e);
-			//			});
-
-
-
-			//			.then(function() {
-			//			return self.trainPersonGroup();
-			//			})
-			//			.then(function() {
-			//			Ember.Logger.log("person group id: " + self.get('personGroupId'));
-			//			self.personGroupTrainingStatus();
-			//			return self.identify(self.get('detectedFace'));
-			//			})
-
-
 		},
 		didError(error) {
 			// Fires when a WebcamError occurs.
 			Ember.Logger.log(error);
 		},
-
 	}
 });
