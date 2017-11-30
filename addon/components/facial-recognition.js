@@ -273,7 +273,11 @@ export default Ember.Component.extend({
 	},
 
 	createPerson(name) {
-		var body = { "name": name }
+		name = name ? name : "unspecified" ;
+		var body = { name: name }
+
+		Ember.Logger.log("New Person being created: " + JSON.stringify(body));
+
 		var self = this;
 		var params = {
 			"personGroupId": this.get('personGroupId'),
@@ -290,15 +294,13 @@ export default Ember.Component.extend({
 				type: "POST",
 				// Request body
 				data: JSON.stringify(body),
-			})
-				.done(function (data) {
-					Ember.Logger.log("created person: " + data.personId);
-					self.set('personId', data.personId);
-					resolve(data)
-				})
-				.fail(function (e) {
-					reject("create person error" + e);
-				});
+			}).done(function (data) {
+				Ember.Logger.log("Created Person: " + data.personId);
+				self.set('personId', data.personId);
+				resolve(data)
+			}).fail(function (e) {
+				reject("Error: Failed to create person" + e);
+			});
 		});
 	},
 
@@ -345,15 +347,12 @@ export default Ember.Component.extend({
 				type: "GET",
 				// Request body
 				data: "",
-			})
-				.done(function (data) {
-					resolve(data);
-					Ember.Logger.log(" status group success: " + JSON.stringify(data));
-
-				})
-				.fail(function () {
-					reject("status fail")
-				});
+			}).done(function (data) {
+				Ember.Logger.log("Person group training status: Success " + JSON.stringify(data));
+				resolve(data);
+			}).fail(function () {
+				reject("Person group training status: Fail");
+			});
 		});
 	},
 
