@@ -26,7 +26,7 @@ export default Ember.Service.extend({
      */
     takeAPicture: function() {
         var component=this.get('component');
-        if (component) {
+        if (component && !component.isDestroyed) {
             component.snap();
         } else {
             // Wait for the component rendering
