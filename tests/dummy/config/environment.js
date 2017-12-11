@@ -1,5 +1,4 @@
 /* eslint-env node */
-'use strict';
 
 module.exports = function(environment) {
   let ENV = {
@@ -22,8 +21,6 @@ module.exports = function(environment) {
       // Here you can pass flags/options to your application instance
       // when it is created
         recognition: {
-            serviceUrl: "",
-            subscriptionKey:""
         }
     }
   };
@@ -36,12 +33,15 @@ module.exports = function(environment) {
     // ENV.APP.LOG_VIEW_LOOKUPS = true;
       
       //May have to change the URL to use the location where you obtained your subscription keys.
-      ENV.APP.recognition.serviceUrl="https://westus.api.cognitive.microsoft.com/face/v1.0";
-      ENV.APP.recognition.detectUrl=ENV.APP.recognition.serviceUrl + "/detect?";
-      ENV.APP.recognition.createFaceListUrl=ENV.APP.recognition.serviceUrl + "/facelists/{faceListId}?";
-      ENV.APP.recognition.addFaceToListUrl=ENV.APP.recognition.serviceUrl + "/facelists/281fce7e-5b9d-446e-a30b-a73dcd8727f7/persistedFaces?"
-      ENV.APP.recognition.subscriptionKey=""
-          //13hc77781f7e4b19b5fcdd72a8df7156
+	  var recognition = ENV.APP.recognition;
+	  recognition.host="https://westus.api.cognitive.microsoft.com";
+	  recognition.namespace="face/v1.0";
+      recognition.serviceUrl=recognition.host + "/" + recognition.namespace;
+      recognition.identificationThreshold = 0.5;
+      recognition.detectUrl=recognition.serviceUrl + "/detect?";
+      recognition.createFaceListUrl=recognition.serviceUrl + "/facelists/{faceListId}?";
+      recognition.addFaceToListUrl=recognition.serviceUrl + "/facelists/281fce7e-5b9d-446e-a30b-a73dcd8727f7/persistedFaces?"
+      
   }
 
   if (environment === 'test') {

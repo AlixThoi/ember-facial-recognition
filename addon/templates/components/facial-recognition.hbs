@@ -1,14 +1,11 @@
-<h1 class="center-h1" id='intro' visibility:visible> Take your photo </h1>
-<h1 class="center-h1" id='found' visibility: hidden> We recognized you</h1>
-<h1 class="center-h1" id='not-found' visibility: hidden> We don't recognize you, YET!</h1>
-
-{{#ember-webcam
+{{#ember-webcam 
+	id="webcam"
 	didSnap=(action 'didSnap')
   	didError=(action 'didError')
   		as |camera|}}
-  		<p id='emotionBubble' visibility: hidden class="speech">SitePoint Rocks!</p>
-  	<button class="camera-button" {{action camera.snap}}> Take Snapshot!
+  		<div id="camera-wrapper" hidden={{hideButton}}>
+   		<button class="camera-button" {{action camera.snap}}> Take Snapshot!
   		</button>
+  		</div>
 	{{/ember-webcam}}
-
 {{yield}}
