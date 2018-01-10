@@ -3,7 +3,7 @@ import Ember from 'ember';
 export default AzureSerializer.extend({
 	store: Ember.inject.service(),
 	
-	serialize(snapshot) {
+	serialize() {
 		var json = this._super(...arguments);
 		json.blob = this.convertDataUriToBinary(json.imageUri);
 		return {
@@ -11,7 +11,6 @@ export default AzureSerializer.extend({
 			personId: json.personId,
 			id: json.id,
 			blob: json.blob
-			
 		};
 	},
 	

@@ -10,7 +10,7 @@
  
 ## Running Demo Locally
 
-Run ```ember serve``` and visit the demo page at http://localhost:4200
+Run ```ember serve``` and visit the demo page at http://localhost:4200/api
  
 ## Usage
 

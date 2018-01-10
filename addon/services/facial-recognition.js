@@ -1,5 +1,4 @@
 import Ember from 'ember';
-import {v4} from 'ember-uuid';
 /**
  * The common service for facial recognition
  * Use: 
