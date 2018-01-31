@@ -13,9 +13,9 @@ export default AzureAdapter.extend({
 	/**
 	 * Get the url - replacing the personGroupId
 	 */
-	getUrl: function(addFaceRequest) {
+	getUrl: function(trainGroup, json) {
 		var url= this._super(...arguments);
-		return url.replace('{personGroupId}', addFaceRequest.personGroupId);
+		return url.replace('{personGroupId}', json.personGroupId);
 		
 		
 	}

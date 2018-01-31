@@ -15,8 +15,12 @@ export default Ember.Controller.extend({
 			this.get('facialRecognition').loadPersonGroups()
 			.then(function(personGroups) {
 				self.set('model.personGroups', personGroups);
-				self.set('model.personGroup', personGroups.objectAt(0));
+				self.set('model.personGroup', personGroups.objectAt(3));
 			})
+		},
+		updatePersonGroup: function(personGroup) {
+			var self = this;
+			self.set('model.personGroup', personGroup);
 		},
 		detect: function() {
 			var self = this;
@@ -80,11 +84,10 @@ export default Ember.Controller.extend({
 
 		getPersonRequest: function() {	
 			var self = this;
-			var person = this.get('model.person');
+			var person = this.get('model.person.id');
 			this.get('facialRecognition').getPerson(
 					this.get('model.personGroup.id'), 
-					person.get('id')
-			)
+					person)
 			.then(function(getPerson) {
 				Ember.Logger.log("asdkjflk")
 				self.set('getPersonResult', JSON.stringify(getPerson));

@@ -5,8 +5,9 @@
 </div>
 <h3>Person Groups</h3>
 <button{{action "loadPersonGroups"}}>Load</button>
-<select> {{#each model.personGroups as |personGroup|}}
-	<option value=personGroup>{{personGroup.name}}</option> {{/each}}
+<select onchange={{action "updatePersonGroup" value ="personGroup"}}>
+	{{#each model.personGroups as |personGroup|}}
+	<option value=model.personGroup>{{personGroup.name}}</option> {{/each}}
 </select>
 
 <p/>

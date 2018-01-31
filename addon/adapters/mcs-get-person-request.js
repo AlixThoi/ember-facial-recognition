@@ -10,10 +10,10 @@ export default AzureAdapter.extend({
 	/**
 	 * Get the url - replacing the personGroupId
 	 */
-	getUrl: function(query) {
+	getUrl: function(query,json) {
 		var url= this._super(...arguments);
-		url = url.replace('{personGroupId}', query.personGroupId);
-		return url.replace('{personId}', query.personId);
+		url = url.replace('{personGroupId}', json.personGroupId);
+		return url.replace('{personId}', json.personId);
 		
 		
 	}
