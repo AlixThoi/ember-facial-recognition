@@ -71,7 +71,7 @@ export default Ember.Service.extend({
         return detectRequest.save()
         .then(function(detectRequest){
             Ember.Logger.log('Found ' + detectRequest.get('faces.length') + ' faces');
-            Ember.Logger.log(detectRequest);
+            //Ember.Logger.log(detectRequest);
             Ember.Logger.log(JSON.stringify(detectRequest));
             return detectRequest; 
         })

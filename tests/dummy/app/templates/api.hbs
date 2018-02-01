@@ -5,8 +5,10 @@
 </div>
 <h3>Person Groups</h3>
 <button{{action "loadPersonGroups"}}>Load</button>
-<select> {{#each model.personGroups as |personGroup|}}
-	<option value=personGroup>{{personGroup.name}}</option> {{/each}}
+<select onchange={{action "personGroupSelected" value="target.value"}}> 
+	{{#each model.personGroups as |personGroup|}}
+	<option value={{personGroup.id}} >{{personGroup.name}} </option> 
+	{{/each}}
 </select>
 
 <p/>

@@ -5,6 +5,7 @@
 import Ember from 'ember';
 import DS from 'ember-data';
 import {v4} from 'ember-uuid';
+import $ from 'jquery'; 
 export default DS.Adapter.extend({
 	processData: false,
 	dataType: 'json',
@@ -83,7 +84,7 @@ export default DS.Adapter.extend({
 			body = JSON.stringify(json);
 		}
 		return new Ember.RSVP.Promise(function(resolve, reject) {
-			Ember.$.ajax({	  
+			$.ajax({	  
 				type: type,
 				headers: self.get('headers'),
 				url: self.getUrl(type,json),

@@ -18,6 +18,13 @@ export default Ember.Controller.extend({
 				self.set('model.personGroup', personGroups.objectAt(0));
 			})
 		},
+		personGroupSelected: function( personGroupId) {
+			var self = this; 
+			this.store.findRecord('mcs-person-group', personGroupId)
+			.then(function(personGroup) {
+				self.set('model.personGroup', personGroup);
+			});
+		},
 		detect: function() {
 			var self = this;
 			this.get('facialRecognition').detect(this.get('imageUri'))
@@ -37,9 +44,14 @@ export default Ember.Controller.extend({
 					this.get('config.identificationThreshold'), 
 					[this.get('model.detectResponse').objectAt(0).get('id')] )
 					.then(function(identifyRequest){
-						var candidate = identifyRequest.get('candidates').objectAt(0); 
-						self.set('identifyResponseString', JSON.stringify(candidate));
-						self.set('model.person.id', candidate.get('personId'));
+						
+						if (identifyRequest && identifyRequest.get('candidates')) {
+							var candidate = identifyRequest.get('candidates').objectAt(0); 
+							self.set('identifyResponseString', JSON.stringify(candidate));
+							self.set('model.person.id', candidate.get('personId'));
+						} else {
+							self.set('identifyResponseString', 'No candidates found');
+						}
 					});
 		},
 		addPersonGroup: function() {

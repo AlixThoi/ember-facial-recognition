@@ -12,7 +12,7 @@ export default AzureAdapter.extend({
 	/**
 	 * Get the url - replacing the personGroupId
 	 */
-	getUrl: function(addFaceRequest) {
+	getUrl: function(type, addFaceRequest) {
 		var url= this._super(...arguments);
 		url = url.replace('{personGroupId}', addFaceRequest.personGroupId);
 		return url.replace('{personId}', addFaceRequest.personId);

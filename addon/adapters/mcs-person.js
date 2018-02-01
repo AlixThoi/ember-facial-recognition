@@ -11,7 +11,7 @@ export default AzureAdapter.extend({
 	/**
 	 * Get the url - replacing the personGroupId
 	 */
-	getUrl: function(person) {
+	getUrl: function(type, person) {
 		var url= this._super(...arguments);
 		return url.replace('{personGroupId}', person.personGroupId);
 	}
