@@ -19,7 +19,7 @@ User Data:
 {{input id="person-group-user-data-text" value=model.personGroup.userData }}
 <button{{action "addPersonGroup"}}>Create</button>
 <p>
-{{textarea  id="add-person-person-group-result-area" value=addPersonGroupResponse cols="80" rows="6"}}
+{{textarea  id="add-person-person-group-result-area" placeholder="Person Group Response" value=addPersonGroupResponse cols="80" rows="6"}}
 </p>
 <p/>
 
@@ -28,21 +28,21 @@ User Data:
 	a picture</button>
 <p>
 {{facial-recognition pictureTaken=(action "pictureTaken")}}
-{{textarea id="image-text" value=imageUri cols="80" rows="6"}}
+{{textarea id="image-text" placeholder="Insert image URI or click take a picture with a webcam" value=imageUri cols="80" rows="6"}}
 </p>
 <h3>Detect Features (from image URI)</h3>
 <button{{action "detect"}}>Detect</button>
 <p>
-{{textarea id="detect-result-area" value=detectResponseString cols="80" rows="6"}}
+{{textarea id="detect-result-area" placeholder="Detect Response" value=detectResponseString cols="80" rows="6"}}
 </p>
 <h3>Identify</h3>
 <button{{action "identify"}}>Identify</button>
-{{textarea  id="identify-result-area" value=identifyResponseString cols="80" rows="6"}}
+{{textarea  id="identify-result-area" placeholder="Identify Response" value=identifyResponseString cols="80" rows="6"}}
 
 <h3>Get Person</h3>
 <button{{action "getPersonRequest"}}>Get</button>
 person id: {{input id="person-id-text" value=model.person.id}}
-{{textarea  id="get-person-result-area" value=getPersonResult cols="80" rows="6"}}
+{{textarea  id="get-person-result-area" placeholder="Get Person Response" value=getPersonResult cols="80" rows="6"}}
 <p/>
 
 <p/>
@@ -52,16 +52,16 @@ Name: {{input id="name-text" value=model.person.name }}
 User Data: 
 {{input id="user-data-text" value=model.person.userData }}
 <p>
-{{textarea  id="add-person-result-area" value=addPersonResponse cols="80" rows="6"}}
+{{textarea  id="add-person-result-area" placeholder="Create Person Response" value=addPersonResponse cols="80" rows="6"}}
 </p>
 <p/>
 
 <h3>Add Face</h3>
 <button{{action "addFace"}}>Add</button>
-{{textarea  id="face-result-area" value=addFaceResult cols="80" rows="6"}}
+{{textarea  id="face-result-area" value=addFaceResult placeholder="Add Face Response" cols="80" rows="6"}}
 
 <h3>Train Person Group</h3>
 <button{{action "trainGroup"}}>Add</button>
-{{textarea  id="train-person-result-area" value=trainPersonResult cols="80" rows="6"}}
+{{textarea  id="train-person-result-area" placeholder="Train Person Group does not give a response" value=trainPersonResult cols="80" rows="6"}}
 
 
