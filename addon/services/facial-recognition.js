@@ -164,9 +164,9 @@ export default Ember.Service.extend({
             personGroupId: personGroup, 
             personId: id
         })
-        .then(function(getPerson) {
-            Ember.Logger.log("Found " + getPerson.get('id'));
-            return getPerson;
+        .then(function(person) {
+            Ember.Logger.log("Found " + person.get('id'));
+            return person;
         })
     },
 
